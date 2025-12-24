@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Geolocation, Position } from '@capacitor/geolocation';
 
 export interface LocationData {
   id?: string;
@@ -24,12 +25,17 @@ export interface UseLocationTrackingReturn {
 
 const DEVICE_ID = 'my-phone';
 
+// Check if running in Capacitor native environment
+const isNative = () => {
+  return typeof (window as any).Capacitor !== 'undefined';
+};
+
 export const useLocationTracking = (): UseLocationTrackingReturn => {
   const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const [locationHistory, setLocationHistory] = useState<LocationData[]>([]);
   const [isTracking, setIsTracking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const watchIdRef = useRef<number | null>(null);
+  const watchIdRef = useRef<string | number | null>(null);
 
   // Fetch location history on mount
   useEffect(() => {
@@ -78,14 +84,21 @@ export const useLocationTracking = (): UseLocationTrackingReturn => {
     };
   }, []);
 
-  const saveLocation = useCallback(async (position: GeolocationPosition) => {
+  const saveLocation = useCallback(async (coords: {
+    latitude: number;
+    longitude: number;
+    accuracy?: number | null;
+    speed?: number | null;
+    heading?: number | null;
+    altitude?: number | null;
+  }) => {
     const locationData = {
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
-      accuracy: position.coords.accuracy,
-      speed: position.coords.speed,
-      heading: position.coords.heading,
-      altitude: position.coords.altitude,
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      accuracy: coords.accuracy ?? null,
+      speed: coords.speed ?? null,
+      heading: coords.heading ?? null,
+      altitude: coords.altitude ?? null,
       device_id: DEVICE_ID,
     };
 
@@ -97,7 +110,53 @@ export const useLocationTracking = (): UseLocationTrackingReturn => {
     }
   }, []);
 
-  const startTracking = useCallback(() => {
+  const startTrackingNative = useCallback(async () => {
+    try {
+      // Request permissions first
+      const permissions = await Geolocation.requestPermissions();
+      if (permissions.location !== 'granted') {
+        setError('Location permission denied');
+        return;
+      }
+
+      setError(null);
+      setIsTracking(true);
+
+      // Get initial position
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+      });
+      
+      await saveLocation(position.coords);
+
+      // Watch position
+      const watchId = await Geolocation.watchPosition(
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+        },
+        async (position: Position | null, err) => {
+          if (err) {
+            console.error('Watch position error:', err);
+            setError(err.message);
+            return;
+          }
+          if (position) {
+            await saveLocation(position.coords);
+          }
+        }
+      );
+
+      watchIdRef.current = watchId;
+    } catch (err: any) {
+      console.error('Geolocation error:', err);
+      setError(err.message || 'Failed to get location');
+      setIsTracking(false);
+    }
+  }, [saveLocation]);
+
+  const startTrackingWeb = useCallback(() => {
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by your browser');
       return;
@@ -109,7 +168,7 @@ export const useLocationTracking = (): UseLocationTrackingReturn => {
     // Get initial position
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        saveLocation(position);
+        saveLocation(position.coords);
       },
       (err) => {
         console.error('Geolocation error:', err);
@@ -122,10 +181,10 @@ export const useLocationTracking = (): UseLocationTrackingReturn => {
       }
     );
 
-    // Watch position for live tracking
+    // Watch position
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
-        saveLocation(position);
+        saveLocation(position.coords);
       },
       (err) => {
         console.error('Geolocation watch error:', err);
@@ -139,9 +198,21 @@ export const useLocationTracking = (): UseLocationTrackingReturn => {
     );
   }, [saveLocation]);
 
-  const stopTracking = useCallback(() => {
+  const startTracking = useCallback(() => {
+    if (isNative()) {
+      startTrackingNative();
+    } else {
+      startTrackingWeb();
+    }
+  }, [startTrackingNative, startTrackingWeb]);
+
+  const stopTracking = useCallback(async () => {
     if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
+      if (isNative()) {
+        await Geolocation.clearWatch({ id: watchIdRef.current as string });
+      } else {
+        navigator.geolocation.clearWatch(watchIdRef.current as number);
+      }
       watchIdRef.current = null;
     }
     setIsTracking(false);
@@ -166,7 +237,11 @@ export const useLocationTracking = (): UseLocationTrackingReturn => {
   useEffect(() => {
     return () => {
       if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
+        if (isNative()) {
+          Geolocation.clearWatch({ id: watchIdRef.current as string });
+        } else {
+          navigator.geolocation.clearWatch(watchIdRef.current as number);
+        }
       }
     };
   }, []);
