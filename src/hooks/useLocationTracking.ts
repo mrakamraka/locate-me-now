@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Geolocation, Position } from '@capacitor/geolocation';
 
 export interface LocationData {
   id?: string;
@@ -25,30 +24,25 @@ export interface UseLocationTrackingReturn {
 
 const DEVICE_ID = 'my-phone';
 
-// Check if running in Capacitor native environment
-const isNative = () => {
-  return typeof (window as any).Capacitor !== 'undefined';
-};
-
 export const useLocationTracking = (): UseLocationTrackingReturn => {
   const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const [locationHistory, setLocationHistory] = useState<LocationData[]>([]);
   const [isTracking, setIsTracking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const watchIdRef = useRef<string | number | null>(null);
+  const watchIdRef = useRef<number | null>(null);
 
   // Fetch location history on mount
   useEffect(() => {
     const fetchHistory = async () => {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('locations')
         .select('*')
         .eq('device_id', DEVICE_ID)
         .order('created_at', { ascending: false })
         .limit(500);
 
-      if (error) {
-        console.error('Error fetching location history:', error);
+      if (fetchError) {
+        console.error('Error fetching location history:', fetchError);
       } else if (data) {
         setLocationHistory(data as LocationData[]);
         if (data.length > 0) {
@@ -84,79 +78,26 @@ export const useLocationTracking = (): UseLocationTrackingReturn => {
     };
   }, []);
 
-  const saveLocation = useCallback(async (coords: {
-    latitude: number;
-    longitude: number;
-    accuracy?: number | null;
-    speed?: number | null;
-    heading?: number | null;
-    altitude?: number | null;
-  }) => {
+  const saveLocation = useCallback(async (coords: GeolocationCoordinates) => {
     const locationData = {
       latitude: coords.latitude,
       longitude: coords.longitude,
-      accuracy: coords.accuracy ?? null,
-      speed: coords.speed ?? null,
-      heading: coords.heading ?? null,
-      altitude: coords.altitude ?? null,
+      accuracy: coords.accuracy,
+      speed: coords.speed,
+      heading: coords.heading,
+      altitude: coords.altitude,
       device_id: DEVICE_ID,
     };
 
-    const { error } = await supabase.from('locations').insert(locationData);
+    const { error: saveError } = await supabase.from('locations').insert(locationData);
 
-    if (error) {
-      console.error('Error saving location:', error);
+    if (saveError) {
+      console.error('Error saving location:', saveError);
       setError('Failed to save location');
     }
   }, []);
 
-  const startTrackingNative = useCallback(async () => {
-    try {
-      // Request permissions first
-      const permissions = await Geolocation.requestPermissions();
-      if (permissions.location !== 'granted') {
-        setError('Location permission denied');
-        return;
-      }
-
-      setError(null);
-      setIsTracking(true);
-
-      // Get initial position
-      const position = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        timeout: 10000,
-      });
-      
-      await saveLocation(position.coords);
-
-      // Watch position
-      const watchId = await Geolocation.watchPosition(
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-        },
-        async (position: Position | null, err) => {
-          if (err) {
-            console.error('Watch position error:', err);
-            setError(err.message);
-            return;
-          }
-          if (position) {
-            await saveLocation(position.coords);
-          }
-        }
-      );
-
-      watchIdRef.current = watchId;
-    } catch (err: any) {
-      console.error('Geolocation error:', err);
-      setError(err.message || 'Failed to get location');
-      setIsTracking(false);
-    }
-  }, [saveLocation]);
-
-  const startTrackingWeb = useCallback(() => {
+  const startTracking = useCallback(() => {
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by your browser');
       return;
@@ -181,7 +122,7 @@ export const useLocationTracking = (): UseLocationTrackingReturn => {
       }
     );
 
-    // Watch position
+    // Watch position for live tracking
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
         saveLocation(position.coords);
@@ -198,34 +139,22 @@ export const useLocationTracking = (): UseLocationTrackingReturn => {
     );
   }, [saveLocation]);
 
-  const startTracking = useCallback(() => {
-    if (isNative()) {
-      startTrackingNative();
-    } else {
-      startTrackingWeb();
-    }
-  }, [startTrackingNative, startTrackingWeb]);
-
-  const stopTracking = useCallback(async () => {
+  const stopTracking = useCallback(() => {
     if (watchIdRef.current !== null) {
-      if (isNative()) {
-        await Geolocation.clearWatch({ id: watchIdRef.current as string });
-      } else {
-        navigator.geolocation.clearWatch(watchIdRef.current as number);
-      }
+      navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
     }
     setIsTracking(false);
   }, []);
 
   const clearHistory = useCallback(async () => {
-    const { error } = await supabase
+    const { error: deleteError } = await supabase
       .from('locations')
       .delete()
       .eq('device_id', DEVICE_ID);
 
-    if (error) {
-      console.error('Error clearing history:', error);
+    if (deleteError) {
+      console.error('Error clearing history:', deleteError);
       setError('Failed to clear history');
     } else {
       setLocationHistory([]);
@@ -237,11 +166,7 @@ export const useLocationTracking = (): UseLocationTrackingReturn => {
   useEffect(() => {
     return () => {
       if (watchIdRef.current !== null) {
-        if (isNative()) {
-          Geolocation.clearWatch({ id: watchIdRef.current as string });
-        } else {
-          navigator.geolocation.clearWatch(watchIdRef.current as number);
-        }
+        navigator.geolocation.clearWatch(watchIdRef.current);
       }
     };
   }, []);
