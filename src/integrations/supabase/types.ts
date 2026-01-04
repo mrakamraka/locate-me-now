@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      coin_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coin_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locations: {
         Row: {
           accuracy: number | null
@@ -49,6 +84,53 @@ export type Database = {
           speed?: number | null
         }
         Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          current_level: number
+          email: string | null
+          id: string
+          referral_code: string
+          referral_count: number
+          referred_by: string | null
+          total_coins: number
+          total_distance_km: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_level?: number
+          email?: string | null
+          id: string
+          referral_code?: string
+          referral_count?: number
+          referred_by?: string | null
+          total_coins?: number
+          total_distance_km?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_level?: number
+          email?: string | null
+          id?: string
+          referral_code?: string
+          referral_count?: number
+          referred_by?: string | null
+          total_coins?: number
+          total_distance_km?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Play, Square, Trash2, MapPin, Route } from 'lucide-react';
+import { Play, Square, Trash2, MapPin, Route, Zap } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,26 +39,26 @@ const TrackingControls: React.FC<TrackingControlsProps> = ({
   historyCount,
 }) => {
   return (
-    <div className="flex flex-wrap items-center gap-4">
+    <div className="flex flex-wrap items-center gap-4 p-4 rounded-xl bg-crypto-card/80 backdrop-blur-xl border border-crypto-border">
       {/* Main tracking button */}
       <Button
         size="lg"
         onClick={isTracking ? onStopTracking : onStartTracking}
-        className={`min-w-[160px] ${
+        className={`min-w-[180px] font-bold ${
           isTracking
-            ? 'bg-destructive hover:bg-destructive/90'
-            : 'bg-accent hover:bg-accent/90'
+            ? 'bg-red-500/80 hover:bg-red-500/70 text-white'
+            : 'bg-gradient-to-r from-crypto-green to-crypto-green/80 hover:from-crypto-green/90 hover:to-crypto-green/70 text-crypto-dark'
         }`}
       >
         {isTracking ? (
           <>
             <Square className="w-5 h-5 mr-2" />
-            Zaustavi praćenje
+            Zaustavi zaradu
           </>
         ) : (
           <>
-            <Play className="w-5 h-5 mr-2" />
-            Pokreni praćenje
+            <Zap className="w-5 h-5 mr-2" />
+            Počni zarađivati
           </>
         )}
       </Button>
@@ -70,10 +70,11 @@ const TrackingControls: React.FC<TrackingControlsProps> = ({
             id="show-path"
             checked={showPath}
             onCheckedChange={onShowPathChange}
+            className="data-[state=checked]:bg-crypto-purple"
           />
-          <Label htmlFor="show-path" className="flex items-center gap-1.5 cursor-pointer">
+          <Label htmlFor="show-path" className="flex items-center gap-1.5 cursor-pointer text-crypto-muted hover:text-white transition-colors">
             <Route className="w-4 h-4" />
-            Prikaži putanju
+            Putanja
           </Label>
         </div>
 
@@ -82,10 +83,11 @@ const TrackingControls: React.FC<TrackingControlsProps> = ({
             id="center-location"
             checked={centerOnLocation}
             onCheckedChange={onCenterOnLocationChange}
+            className="data-[state=checked]:bg-crypto-purple"
           />
-          <Label htmlFor="center-location" className="flex items-center gap-1.5 cursor-pointer">
+          <Label htmlFor="center-location" className="flex items-center gap-1.5 cursor-pointer text-crypto-muted hover:text-white transition-colors">
             <MapPin className="w-4 h-4" />
-            Centriraj mapu
+            Centriraj
           </Label>
         </div>
       </div>
@@ -94,22 +96,31 @@ const TrackingControls: React.FC<TrackingControlsProps> = ({
       {historyCount > 0 && (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="outline" size="sm" className="ml-auto">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-auto border-crypto-border text-crypto-muted hover:text-white hover:bg-crypto-card hover:border-red-500/50"
+            >
               <Trash2 className="w-4 h-4 mr-2" />
-              Obriši historiju
+              Obriši ({historyCount})
             </Button>
           </AlertDialogTrigger>
-          <AlertDialogContent>
+          <AlertDialogContent className="bg-crypto-card border-crypto-border">
             <AlertDialogHeader>
-              <AlertDialogTitle>Obriši svu historiju lokacija?</AlertDialogTitle>
-              <AlertDialogDescription>
+              <AlertDialogTitle className="text-white">Obriši historiju lokacija?</AlertDialogTitle>
+              <AlertDialogDescription className="text-crypto-muted">
                 Ova akcija će trajno obrisati {historyCount} zapisanih lokacija.
-                Ovo se ne može poništiti.
+                WALK Coins ostaju sigurni!
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Odustani</AlertDialogCancel>
-              <AlertDialogAction onClick={onClearHistory} className="bg-destructive hover:bg-destructive/90">
+              <AlertDialogCancel className="bg-crypto-dark border-crypto-border text-crypto-muted hover:text-white">
+                Odustani
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={onClearHistory} 
+                className="bg-red-500/80 hover:bg-red-500/70 text-white"
+              >
                 Obriši
               </AlertDialogAction>
             </AlertDialogFooter>
