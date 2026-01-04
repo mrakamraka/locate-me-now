@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Crypto-style design system */
 
 @layer base {
   :root {
@@ -47,10 +45,20 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Custom tokens for location tracker */
+    /* Location tracker tokens */
     --location-active: 160 84% 39%;
     --location-inactive: 0 0% 60%;
     --map-overlay: 220 30% 10% / 0.8;
+
+    /* Crypto tokens */
+    --crypto-dark: 220 30% 8%;
+    --crypto-card: 220 30% 12%;
+    --crypto-border: 220 25% 20%;
+    --crypto-muted: 220 10% 55%;
+    --crypto-gold: 45 93% 58%;
+    --crypto-green: 160 84% 45%;
+    --crypto-purple: 270 70% 60%;
+    --crypto-blue: 210 100% 55%;
   }
 
   .dark {
@@ -124,6 +132,183 @@ All colors MUST be HSL.
     50% {
       box-shadow: 0 0 0 20px hsl(var(--location-active) / 0);
     }
+  }
+
+  /* Crypto specific utilities */
+  .bg-crypto-dark {
+    background-color: hsl(var(--crypto-dark));
+  }
+  
+  .bg-crypto-card {
+    background-color: hsl(var(--crypto-card));
+  }
+  
+  .border-crypto-border {
+    border-color: hsl(var(--crypto-border));
+  }
+  
+  .text-crypto-muted {
+    color: hsl(var(--crypto-muted));
+  }
+  
+  .text-crypto-gold {
+    color: hsl(var(--crypto-gold));
+  }
+  
+  .text-crypto-green {
+    color: hsl(var(--crypto-green));
+  }
+  
+  .text-crypto-purple {
+    color: hsl(var(--crypto-purple));
+  }
+  
+  .text-crypto-blue {
+    color: hsl(var(--crypto-blue));
+  }
+  
+  .bg-crypto-gold {
+    background-color: hsl(var(--crypto-gold));
+  }
+
+  .bg-crypto-gold\/10 {
+    background-color: hsl(var(--crypto-gold) / 0.1);
+  }
+
+  .bg-crypto-gold\/20 {
+    background-color: hsl(var(--crypto-gold) / 0.2);
+  }
+  
+  .bg-crypto-green {
+    background-color: hsl(var(--crypto-green));
+  }
+
+  .bg-crypto-green\/5 {
+    background-color: hsl(var(--crypto-green) / 0.05);
+  }
+
+  .bg-crypto-green\/10 {
+    background-color: hsl(var(--crypto-green) / 0.1);
+  }
+  
+  .bg-crypto-purple {
+    background-color: hsl(var(--crypto-purple));
+  }
+
+  .bg-crypto-purple\/5 {
+    background-color: hsl(var(--crypto-purple) / 0.05);
+  }
+
+  .bg-crypto-purple\/10 {
+    background-color: hsl(var(--crypto-purple) / 0.1);
+  }
+
+  .bg-crypto-purple\/20 {
+    background-color: hsl(var(--crypto-purple) / 0.2);
+  }
+  
+  .bg-crypto-blue\/10 {
+    background-color: hsl(var(--crypto-blue) / 0.1);
+  }
+
+  .bg-crypto-card\/50 {
+    background-color: hsl(var(--crypto-card) / 0.5);
+  }
+
+  .bg-crypto-card\/80 {
+    background-color: hsl(var(--crypto-card) / 0.8);
+  }
+
+  .bg-crypto-dark\/50 {
+    background-color: hsl(var(--crypto-dark) / 0.5);
+  }
+
+  .border-crypto-gold\/30 {
+    border-color: hsl(var(--crypto-gold) / 0.3);
+  }
+
+  .border-crypto-green\/30 {
+    border-color: hsl(var(--crypto-green) / 0.3);
+  }
+
+  .border-crypto-purple\/30 {
+    border-color: hsl(var(--crypto-purple) / 0.3);
+  }
+
+  .border-crypto-blue\/30 {
+    border-color: hsl(var(--crypto-blue) / 0.3);
+  }
+
+  .shadow-crypto-gold\/20 {
+    box-shadow: 0 10px 40px -10px hsl(var(--crypto-gold) / 0.2);
+  }
+
+  .from-crypto-gold {
+    --tw-gradient-from: hsl(var(--crypto-gold));
+  }
+
+  .to-crypto-gold\/60 {
+    --tw-gradient-to: hsl(var(--crypto-gold) / 0.6);
+  }
+
+  .to-crypto-gold\/80 {
+    --tw-gradient-to: hsl(var(--crypto-gold) / 0.8);
+  }
+
+  .from-crypto-purple {
+    --tw-gradient-from: hsl(var(--crypto-purple));
+  }
+
+  .to-crypto-purple\/80 {
+    --tw-gradient-to: hsl(var(--crypto-purple) / 0.8);
+  }
+
+  .to-crypto-purple\/10 {
+    --tw-gradient-to: hsl(var(--crypto-purple) / 0.1);
+  }
+
+  .focus\:border-crypto-gold:focus {
+    border-color: hsl(var(--crypto-gold));
+  }
+
+  .focus\:border-crypto-purple:focus {
+    border-color: hsl(var(--crypto-purple));
+  }
+
+  .focus\:ring-crypto-gold\/20:focus {
+    --tw-ring-color: hsl(var(--crypto-gold) / 0.2);
+  }
+
+  .focus\:ring-crypto-purple\/20:focus {
+    --tw-ring-color: hsl(var(--crypto-purple) / 0.2);
+  }
+
+  .hover\:bg-crypto-purple\/20:hover {
+    background-color: hsl(var(--crypto-purple) / 0.2);
+  }
+
+  .hover\:border-crypto-purple:hover {
+    border-color: hsl(var(--crypto-purple));
+  }
+
+  .hover\:text-crypto-gold:hover {
+    color: hsl(var(--crypto-gold));
+  }
+
+  .hover\:from-crypto-gold\/90:hover {
+    --tw-gradient-from: hsl(var(--crypto-gold) / 0.9);
+  }
+
+  .hover\:to-crypto-gold\/70:hover {
+    --tw-gradient-to: hsl(var(--crypto-gold) / 0.7);
+  }
+
+  .hover\:from-crypto-purple\/90:hover {
+    --tw-gradient-from: hsl(var(--crypto-purple) / 0.9);
+  }
+
+  .hover\:to-crypto-purple\/70:hover {
+    --tw-gradient-to: hsl(var(--crypto-purple) / 0.7);
   }
 }
 

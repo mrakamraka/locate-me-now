@@ -1,15 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
+import { useAuth } from '@/hooks/useAuth';
+import { useWalkCoins } from '@/hooks/useWalkCoins';
 import LocationMap from '@/components/LocationMap';
-import LocationStats from '@/components/LocationStats';
-import LocationHistory from '@/components/LocationHistory';
+import CryptoStats from '@/components/CryptoStats';
+import ReferralCard from '@/components/ReferralCard';
+import TransactionHistory from '@/components/TransactionHistory';
 import TrackingControls from '@/components/TrackingControls';
 import { Card, CardContent } from '@/components/ui/card';
-import { Smartphone, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Coins, AlertCircle, LogOut, Zap } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 
+// Haversine formula for distance calculation
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+};
+
 const Index: React.FC = () => {
+  const navigate = useNavigate();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { profile, transactions, loading: coinsLoading, addWalkReward } = useWalkCoins();
   const {
     currentLocation,
     locationHistory,
@@ -22,46 +43,139 @@ const Index: React.FC = () => {
 
   const [showPath, setShowPath] = useState(true);
   const [centerOnLocation, setCenterOnLocation] = useState(true);
+  const [sessionDistance, setSessionDistance] = useState(0);
+  const lastRewardedDistanceRef = useRef(0);
+  const previousLocationRef = useRef<{ latitude: number; longitude: number } | null>(null);
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  // Track distance and reward coins
+  useEffect(() => {
+    if (currentLocation && previousLocationRef.current && isTracking) {
+      const distance = calculateDistance(
+        previousLocationRef.current.latitude,
+        previousLocationRef.current.longitude,
+        currentLocation.latitude,
+        currentLocation.longitude
+      );
+      
+      // Only add if movement is significant (> 10m) to filter GPS noise
+      if (distance > 0.01) {
+        setSessionDistance(prev => prev + distance);
+      }
+    }
+    
+    if (currentLocation) {
+      previousLocationRef.current = {
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude,
+      };
+    }
+  }, [currentLocation, isTracking]);
+
+  // Award coins every 0.1 km
+  useEffect(() => {
+    const kmToReward = Math.floor(sessionDistance * 10) / 10;
+    const lastRewarded = lastRewardedDistanceRef.current;
+    
+    if (kmToReward > lastRewarded && user) {
+      const newKm = kmToReward - lastRewarded;
+      addWalkReward(newKm);
+      lastRewardedDistanceRef.current = kmToReward;
+      
+      const coinsEarned = Math.floor(newKm * 100 * (1 + (profile?.referral_count || 0)));
+      toast.success(`+${coinsEarned} WALK Coins! 🚀`, {
+        description: `Pređeno ${newKm.toFixed(1)} km`,
+      });
+    }
+  }, [sessionDistance, user, addWalkReward, profile?.referral_count]);
 
   const handleStartTracking = () => {
     startTracking();
-    toast.success('Praćenje lokacije pokrenuto');
+    setSessionDistance(0);
+    lastRewardedDistanceRef.current = 0;
+    previousLocationRef.current = null;
+    toast.success('Praćenje pokrenuto! Hodaj i zarađuj! 💰');
   };
 
   const handleStopTracking = () => {
     stopTracking();
-    toast.info('Praćenje lokacije zaustavljeno');
+    if (sessionDistance > 0) {
+      toast.info(`Sesija završena: ${sessionDistance.toFixed(2)} km`);
+    }
   };
 
   const handleClearHistory = async () => {
     await clearHistory();
-    toast.success('Historija lokacija obrisana');
+    setSessionDistance(0);
+    lastRewardedDistanceRef.current = 0;
+    toast.success('Historija obrisana');
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-crypto-dark flex items-center justify-center">
+        <div className="text-center">
+          <Coins className="w-16 h-16 text-crypto-gold animate-pulse mx-auto mb-4" />
+          <p className="text-crypto-muted">Učitavanje...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-crypto-dark">
       <Toaster position="top-center" />
       
       {/* Header */}
-      <header className="sticky top-0 z-50 glass-panel border-b">
+      <header className="sticky top-0 z-50 bg-crypto-card/90 backdrop-blur-xl border-b border-crypto-border">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary/10">
-              <Smartphone className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">Phone Tracker</h1>
-              <p className="text-sm text-muted-foreground">Live lokacija i historija</p>
-            </div>
-            {isTracking && (
-              <div className="ml-auto flex items-center gap-2">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-accent"></span>
-                </span>
-                <span className="text-sm text-accent font-medium">Aktivno praćenje</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-crypto-gold to-crypto-gold/60 shadow-lg shadow-crypto-gold/20">
+                <Coins className="w-6 h-6 text-crypto-dark" />
               </div>
-            )}
+              <div>
+                <h1 className="text-xl font-bold text-white">
+                  WALK<span className="text-crypto-gold">COIN</span>
+                </h1>
+                <p className="text-sm text-crypto-muted">Level {profile?.current_level || 1}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              {isTracking && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-crypto-green/10 border border-crypto-green/30">
+                  <Zap className="w-4 h-4 text-crypto-green animate-pulse" />
+                  <span className="text-sm text-crypto-green font-medium">
+                    {sessionDistance.toFixed(2)} km
+                  </span>
+                </div>
+              )}
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSignOut}
+                className="text-crypto-muted hover:text-white hover:bg-crypto-card"
+              >
+                <LogOut className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -69,13 +183,16 @@ const Index: React.FC = () => {
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Error message */}
         {error && (
-          <Card className="border-destructive/50 bg-destructive/10">
+          <Card className="bg-red-500/10 border-red-500/30">
             <CardContent className="p-4 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-destructive" />
-              <p className="text-sm text-destructive">{error}</p>
+              <AlertCircle className="w-5 h-5 text-red-400" />
+              <p className="text-sm text-red-400">{error}</p>
             </CardContent>
           </Card>
         )}
+
+        {/* Crypto Stats */}
+        <CryptoStats profile={profile} loading={coinsLoading} />
 
         {/* Controls */}
         <TrackingControls
@@ -90,16 +207,13 @@ const Index: React.FC = () => {
           historyCount={locationHistory.length}
         />
 
-        {/* Stats */}
-        <LocationStats currentLocation={currentLocation} isTracking={isTracking} />
-
         {/* Main content grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Map */}
           <div className="lg:col-span-2">
-            <Card className="glass-panel overflow-hidden">
+            <Card className="bg-crypto-card/80 backdrop-blur-xl border-crypto-border overflow-hidden">
               <CardContent className="p-0">
-                <div className="h-[500px]">
+                <div className="h-[400px]">
                   <LocationMap
                     currentLocation={currentLocation}
                     locationHistory={locationHistory}
@@ -111,9 +225,10 @@ const Index: React.FC = () => {
             </Card>
           </div>
 
-          {/* History */}
-          <div className="lg:col-span-1">
-            <LocationHistory locations={locationHistory} />
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            <ReferralCard profile={profile} />
+            <TransactionHistory transactions={transactions} />
           </div>
         </div>
       </main>
