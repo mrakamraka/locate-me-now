@@ -8,6 +8,7 @@ import CryptoStats from '@/components/CryptoStats';
 import ReferralCard from '@/components/ReferralCard';
 import TransactionHistory from '@/components/TransactionHistory';
 import TrackingControls from '@/components/TrackingControls';
+import Leaderboard from '@/components/Leaderboard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Coins, AlertCircle, LogOut, Zap } from 'lucide-react';
@@ -227,6 +228,7 @@ const Index: React.FC = () => {
 
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
+            <Leaderboard />
             <ReferralCard profile={profile} />
             <TransactionHistory transactions={transactions} />
           </div>
