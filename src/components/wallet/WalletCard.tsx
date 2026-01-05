@@ -1,0 +1,372 @@
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { 
+  Wallet, 
+  Plus, 
+  Download, 
+  Copy, 
+  Check, 
+  MoreVertical, 
+  Pencil, 
+  Trash2, 
+  Star,
+  ChevronDown,
+  ExternalLink,
+  Shield
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { Wallet as WalletType } from '@/hooks/useWallet';
+import { Profile } from '@/hooks/useWalkCoins';
+import CreateWalletModal from './CreateWalletModal';
+import ImportWalletModal from './ImportWalletModal';
+
+interface WalletCardProps {
+  wallets: WalletType[];
+  activeWallet: WalletType | null;
+  profile: Profile | null;
+  loading: boolean;
+  onCreateWallet: (name?: string) => Promise<any>;
+  onImportWallet: (mnemonic: string, name?: string) => Promise<any>;
+  onSetActiveWallet: (walletId: string) => Promise<void>;
+  onDeleteWallet: (walletId: string) => Promise<boolean>;
+  onRenameWallet: (walletId: string, newName: string) => Promise<boolean>;
+  verifyMnemonic: (mnemonic: string) => boolean;
+}
+
+const WalletCard: React.FC<WalletCardProps> = ({
+  wallets,
+  activeWallet,
+  profile,
+  loading,
+  onCreateWallet,
+  onImportWallet,
+  onSetActiveWallet,
+  onDeleteWallet,
+  onRenameWallet,
+  verifyMnemonic,
+}) => {
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [renameModalOpen, setRenameModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedWallet, setSelectedWallet] = useState<WalletType | null>(null);
+  const [newName, setNewName] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyAddress = async () => {
+    if (!activeWallet) return;
+    await navigator.clipboard.writeText(activeWallet.wallet_address);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast.success('Adresa kopirana!');
+  };
+
+  const handleRename = async () => {
+    if (!selectedWallet || !newName.trim()) return;
+    const success = await onRenameWallet(selectedWallet.id, newName.trim());
+    if (success) {
+      toast.success('Wallet preimenovan!');
+      setRenameModalOpen(false);
+      setNewName('');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedWallet) return;
+    const success = await onDeleteWallet(selectedWallet.id);
+    if (success) {
+      toast.success('Wallet obrisan!');
+      setDeleteModalOpen(false);
+    }
+  };
+
+  const shortenAddress = (address: string) => {
+    return `${address.slice(0, 8)}...${address.slice(-6)}`;
+  };
+
+  if (loading) {
+    return (
+      <Card className="bg-crypto-card/80 backdrop-blur-xl border-crypto-gold/30 animate-pulse">
+        <CardContent className="p-6">
+          <div className="h-32"></div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // No wallet created yet
+  if (wallets.length === 0) {
+    return (
+      <>
+        <Card className="bg-gradient-to-br from-crypto-card to-crypto-dark border-crypto-gold/30">
+          <CardContent className="p-6">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 mx-auto bg-crypto-gold/20 rounded-full flex items-center justify-center">
+                <Wallet className="w-8 h-8 text-crypto-gold" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-1">Kreiraj WALKCOINS Wallet</h3>
+                <p className="text-crypto-muted text-sm">
+                  Kreiraj svoj non-custodial wallet za sigurno čuvanje WALK coins
+                </p>
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button
+                  onClick={() => setCreateModalOpen(true)}
+                  className="bg-crypto-gold hover:bg-crypto-gold/90 text-black font-bold"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novi Wallet
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setImportModalOpen(true)}
+                  className="border-crypto-purple text-crypto-purple hover:bg-crypto-purple/10"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Uvezi
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <CreateWalletModal
+          isOpen={createModalOpen}
+          onClose={() => setCreateModalOpen(false)}
+          onCreate={onCreateWallet}
+        />
+        <ImportWalletModal
+          isOpen={importModalOpen}
+          onClose={() => setImportModalOpen(false)}
+          onImport={onImportWallet}
+          verifyMnemonic={verifyMnemonic}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Card className="bg-gradient-to-br from-crypto-card via-crypto-dark to-crypto-card border-crypto-gold/30 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-crypto-gold/5 via-transparent to-crypto-purple/5 pointer-events-none" />
+        
+        <CardHeader className="relative pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-crypto-gold/20 rounded-lg">
+                <Wallet className="w-5 h-5 text-crypto-gold" />
+              </div>
+              <div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      className="h-auto p-1 text-white hover:bg-crypto-gold/10 flex items-center gap-1"
+                    >
+                      <span className="font-bold">{activeWallet?.wallet_name}</span>
+                      {activeWallet?.is_primary && (
+                        <Star className="w-3 h-3 text-crypto-gold fill-crypto-gold" />
+                      )}
+                      <ChevronDown className="w-4 h-4 text-crypto-muted" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-crypto-card border-crypto-border min-w-[200px]">
+                    {wallets.map((wallet) => (
+                      <DropdownMenuItem
+                        key={wallet.id}
+                        onClick={() => onSetActiveWallet(wallet.id)}
+                        className="text-white hover:bg-crypto-gold/10 cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="flex items-center gap-2">
+                            {wallet.wallet_name}
+                            {wallet.is_primary && (
+                              <Star className="w-3 h-3 text-crypto-gold fill-crypto-gold" />
+                            )}
+                          </span>
+                          {wallet.id === activeWallet?.id && (
+                            <Check className="w-4 h-4 text-crypto-gold" />
+                          )}
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator className="bg-crypto-border" />
+                    <DropdownMenuItem
+                      onClick={() => setCreateModalOpen(true)}
+                      className="text-crypto-gold hover:bg-crypto-gold/10 cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Dodaj Novi Wallet
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setImportModalOpen(true)}
+                      className="text-crypto-purple hover:bg-crypto-purple/10 cursor-pointer"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Uvezi Wallet
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-crypto-muted hover:text-white">
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-crypto-card border-crypto-border">
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedWallet(activeWallet);
+                    setNewName(activeWallet?.wallet_name || '');
+                    setRenameModalOpen(true);
+                  }}
+                  className="text-white hover:bg-crypto-gold/10 cursor-pointer"
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Preimenuj
+                </DropdownMenuItem>
+                {wallets.length > 1 && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setSelectedWallet(activeWallet);
+                      setDeleteModalOpen(true);
+                    }}
+                    className="text-red-400 hover:bg-red-500/10 cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Obriši
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardHeader>
+
+        <CardContent className="relative space-y-4">
+          {/* Balance */}
+          <div className="text-center py-4">
+            <p className="text-crypto-muted text-sm mb-1">Stanje</p>
+            <p className="text-4xl font-bold text-white">
+              {profile?.total_coins.toLocaleString() || '0'}
+            </p>
+            <p className="text-crypto-gold font-semibold">WALK</p>
+          </div>
+
+          {/* Address */}
+          <div className="bg-crypto-dark/50 rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-crypto-muted text-xs mb-1">Wallet Adresa</p>
+                <p className="text-white font-mono text-sm">
+                  {activeWallet ? shortenAddress(activeWallet.wallet_address) : '...'}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleCopyAddress}
+                  className="text-crypto-muted hover:text-white hover:bg-crypto-gold/10"
+                >
+                  {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Security Badge */}
+          <div className="flex items-center justify-center gap-2 text-crypto-muted text-xs">
+            <Shield className="w-3 h-3 text-green-500" />
+            <span>Non-Custodial • Potpuna Kontrola</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Modals */}
+      <CreateWalletModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onCreate={onCreateWallet}
+      />
+      
+      <ImportWalletModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={onImportWallet}
+        verifyMnemonic={verifyMnemonic}
+      />
+
+      {/* Rename Modal */}
+      <Dialog open={renameModalOpen} onOpenChange={setRenameModalOpen}>
+        <DialogContent className="bg-crypto-card border-crypto-border">
+          <DialogHeader>
+            <DialogTitle className="text-white">Preimenuj Wallet</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-white">Novo Ime</Label>
+              <Input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="bg-crypto-dark border-crypto-border text-white"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameModalOpen(false)} className="border-crypto-border">
+              Odustani
+            </Button>
+            <Button onClick={handleRename} className="bg-crypto-gold text-black">
+              Sačuvaj
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Modal */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent className="bg-crypto-card border-crypto-border">
+          <DialogHeader>
+            <DialogTitle className="text-white">Obriši Wallet</DialogTitle>
+            <DialogDescription className="text-crypto-muted">
+              Da li ste sigurni da želite obrisati wallet "{selectedWallet?.wallet_name}"?
+              Ova akcija se ne može poništiti. Ako imate seed frazu, možete uvijek ponovo uvesti wallet.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)} className="border-crypto-border">
+              Odustani
+            </Button>
+            <Button onClick={handleDelete} variant="destructive">
+              Obriši
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+export default WalletCard;

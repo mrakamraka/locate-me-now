@@ -87,6 +87,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_wallet_id: string | null
           created_at: string
           current_level: number
           email: string | null
@@ -99,6 +100,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active_wallet_id?: string | null
           created_at?: string
           current_level?: number
           email?: string | null
@@ -111,6 +113,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active_wallet_id?: string | null
           created_at?: string
           current_level?: number
           email?: string | null
@@ -124,6 +127,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "profiles_active_wallet_id_fkey"
+            columns: ["active_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "profiles_referred_by_fkey"
             columns: ["referred_by"]
             isOneToOne: false
@@ -131,6 +141,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wallets: {
+        Row: {
+          address_checksum: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          updated_at: string
+          user_id: string
+          wallet_address: string
+          wallet_name: string
+        }
+        Insert: {
+          address_checksum: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          updated_at?: string
+          user_id: string
+          wallet_address: string
+          wallet_name?: string
+        }
+        Update: {
+          address_checksum?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string
+          wallet_name?: string
+        }
+        Relationships: []
       }
     }
     Views: {

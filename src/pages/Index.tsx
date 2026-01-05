@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { useAuth } from '@/hooks/useAuth';
 import { useWalkCoins } from '@/hooks/useWalkCoins';
+import { useWallet } from '@/hooks/useWallet';
 import LocationMap from '@/components/LocationMap';
 import CryptoStats from '@/components/CryptoStats';
 import ReferralCard from '@/components/ReferralCard';
 import TransactionHistory from '@/components/TransactionHistory';
 import TrackingControls from '@/components/TrackingControls';
 import Leaderboard from '@/components/Leaderboard';
+import WalletCard from '@/components/wallet/WalletCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Coins, AlertCircle, LogOut, Zap } from 'lucide-react';
@@ -32,6 +34,17 @@ const Index: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { profile, transactions, loading: coinsLoading, addWalkReward } = useWalkCoins();
+  const {
+    wallets,
+    activeWallet,
+    loading: walletLoading,
+    createWallet,
+    importWallet,
+    setActiveWallet,
+    deleteWallet,
+    renameWallet,
+    verifyMnemonic,
+  } = useWallet();
   const {
     currentLocation,
     locationHistory,
@@ -228,6 +241,18 @@ const Index: React.FC = () => {
 
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
+            <WalletCard
+              wallets={wallets}
+              activeWallet={activeWallet}
+              profile={profile}
+              loading={walletLoading}
+              onCreateWallet={createWallet}
+              onImportWallet={importWallet}
+              onSetActiveWallet={setActiveWallet}
+              onDeleteWallet={deleteWallet}
+              onRenameWallet={renameWallet}
+              verifyMnemonic={verifyMnemonic}
+            />
             <Leaderboard />
             <ReferralCard profile={profile} />
             <TransactionHistory transactions={transactions} />
