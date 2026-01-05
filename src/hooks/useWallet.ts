@@ -15,6 +15,20 @@ export interface Wallet {
   updated_at: string;
 }
 
+export interface WalletTransfer {
+  id: string;
+  from_wallet_id: string | null;
+  to_wallet_id: string | null;
+  from_address: string;
+  to_address: string;
+  amount: number;
+  fee: number;
+  status: 'pending' | 'completed' | 'failed';
+  tx_hash: string;
+  note: string | null;
+  created_at: string;
+}
+
 export interface WalletCreationResult {
   wallet: Wallet;
   mnemonic: string;
@@ -23,6 +37,7 @@ export interface WalletCreationResult {
 export interface UseWalletReturn {
   wallets: Wallet[];
   activeWallet: Wallet | null;
+  transfers: WalletTransfer[];
   loading: boolean;
   createWallet: (name?: string) => Promise<WalletCreationResult | null>;
   importWallet: (mnemonic: string, name?: string) => Promise<Wallet | null>;
@@ -30,22 +45,31 @@ export interface UseWalletReturn {
   deleteWallet: (walletId: string) => Promise<boolean>;
   renameWallet: (walletId: string, newName: string) => Promise<boolean>;
   verifyMnemonic: (mnemonic: string) => boolean;
+  sendCoins: (toAddress: string, amount: number, note?: string) => Promise<{ success: boolean; error?: string; txHash?: string }>;
+  validateAddress: (address: string) => Promise<{ valid: boolean; exists: boolean }>;
   refreshWallets: () => Promise<void>;
+  refreshTransfers: () => Promise<void>;
 }
 
 // Generate unique wallet address from mnemonic
 const deriveWalletFromMnemonic = (mnemonic: string): { address: string; checksum: string } => {
   const hdNode = ethers.HDNodeWallet.fromPhrase(mnemonic);
   const address = hdNode.address;
-  // Create a checksum from address for verification
   const checksum = ethers.keccak256(ethers.toUtf8Bytes(address)).slice(0, 18);
   return { address, checksum };
+};
+
+// Generate unique tx hash
+const generateTxHash = (): string => {
+  const randomBytes = ethers.randomBytes(32);
+  return ethers.hexlify(randomBytes);
 };
 
 export const useWallet = (): UseWalletReturn => {
   const { user } = useAuth();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [activeWallet, setActiveWalletState] = useState<Wallet | null>(null);
+  const [transfers, setTransfers] = useState<WalletTransfer[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchWallets = useCallback(async () => {
@@ -68,7 +92,6 @@ export const useWallet = (): UseWalletReturn => {
       const walletData = (data || []) as Wallet[];
       setWallets(walletData);
 
-      // Set active wallet (primary first, or first wallet)
       const primary = walletData.find(w => w.is_primary);
       setActiveWalletState(primary || walletData[0] || null);
     } catch (error) {
@@ -78,15 +101,66 @@ export const useWallet = (): UseWalletReturn => {
     }
   }, [user]);
 
+  const fetchTransfers = useCallback(async () => {
+    if (!user || wallets.length === 0) {
+      setTransfers([]);
+      return;
+    }
+
+    try {
+      const walletIds = wallets.map(w => w.id);
+      const { data, error } = await supabase
+        .from('wallet_transfers')
+        .select('*')
+        .or(`from_wallet_id.in.(${walletIds.join(',')}),to_wallet_id.in.(${walletIds.join(',')})`)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setTransfers((data || []) as WalletTransfer[]);
+    } catch (error) {
+      console.error('Error fetching transfers:', error);
+    }
+  }, [user, wallets]);
+
   useEffect(() => {
     fetchWallets();
   }, [fetchWallets]);
+
+  useEffect(() => {
+    if (wallets.length > 0) {
+      fetchTransfers();
+    }
+  }, [wallets, fetchTransfers]);
+
+  // Subscribe to realtime transfer updates
+  useEffect(() => {
+    if (!user || wallets.length === 0) return;
+
+    const channel = supabase
+      .channel('wallet-transfers')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'wallet_transfers',
+        },
+        () => {
+          fetchTransfers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, wallets, fetchTransfers]);
 
   const createWallet = useCallback(async (name?: string): Promise<WalletCreationResult | null> => {
     if (!user) return null;
 
     try {
-      // Generate 24-word mnemonic (256 bits)
       const mnemonic = bip39.generateMnemonic(256);
       const { address, checksum } = deriveWalletFromMnemonic(mnemonic);
 
@@ -121,7 +195,6 @@ export const useWallet = (): UseWalletReturn => {
     if (!user) return null;
 
     try {
-      // Validate mnemonic
       if (!bip39.validateMnemonic(mnemonic.trim().toLowerCase())) {
         throw new Error('Invalid seed phrase');
       }
@@ -129,7 +202,6 @@ export const useWallet = (): UseWalletReturn => {
       const normalizedMnemonic = mnemonic.trim().toLowerCase();
       const { address, checksum } = deriveWalletFromMnemonic(normalizedMnemonic);
 
-      // Check if wallet already exists
       const { data: existing } = await supabase
         .from('wallets')
         .select('id')
@@ -169,13 +241,11 @@ export const useWallet = (): UseWalletReturn => {
     if (!user) return;
 
     try {
-      // Update all wallets to not primary
       await supabase
         .from('wallets')
         .update({ is_primary: false })
         .eq('user_id', user.id);
 
-      // Set selected wallet as primary
       await supabase
         .from('wallets')
         .update({ is_primary: true })
@@ -229,9 +299,140 @@ export const useWallet = (): UseWalletReturn => {
     return bip39.validateMnemonic(mnemonic.trim().toLowerCase());
   }, []);
 
+  const validateAddress = useCallback(async (address: string): Promise<{ valid: boolean; exists: boolean }> => {
+    // Check if it's a valid Ethereum-style address
+    const isValid = ethers.isAddress(address);
+    if (!isValid) return { valid: false, exists: false };
+
+    // Check if wallet exists in our system
+    const { data } = await supabase
+      .from('wallets')
+      .select('id')
+      .eq('wallet_address', address)
+      .maybeSingle();
+
+    return { valid: true, exists: !!data };
+  }, []);
+
+  const sendCoins = useCallback(async (
+    toAddress: string, 
+    amount: number, 
+    note?: string
+  ): Promise<{ success: boolean; error?: string; txHash?: string }> => {
+    if (!user || !activeWallet) {
+      return { success: false, error: 'Nema aktivnog walleta' };
+    }
+
+    if (amount <= 0) {
+      return { success: false, error: 'Iznos mora biti veći od 0' };
+    }
+
+    // Validate recipient address
+    const { valid, exists } = await validateAddress(toAddress);
+    if (!valid) {
+      return { success: false, error: 'Nevažeća adresa primatelja' };
+    }
+
+    if (!exists) {
+      return { success: false, error: 'Wallet primatelja ne postoji u WALKCOINS mreži' };
+    }
+
+    if (toAddress.toLowerCase() === activeWallet.wallet_address.toLowerCase()) {
+      return { success: false, error: 'Ne možete slati sebi' };
+    }
+
+    try {
+      // Get current balance from profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('total_coins')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile || profile.total_coins < amount) {
+        return { success: false, error: 'Nedovoljno WALK coins' };
+      }
+
+      // Find recipient wallet
+      const { data: recipientWallet } = await supabase
+        .from('wallets')
+        .select('id, user_id')
+        .eq('wallet_address', toAddress)
+        .single();
+
+      if (!recipientWallet) {
+        return { success: false, error: 'Wallet primatelja nije pronađen' };
+      }
+
+      const txHash = generateTxHash();
+
+      // Deduct from sender profile
+      const { error: senderError } = await supabase
+        .from('profiles')
+        .update({ total_coins: profile.total_coins - amount })
+        .eq('id', user.id);
+
+      if (senderError) throw senderError;
+
+      // Add to recipient profile
+      const { data: recipientProfile } = await supabase
+        .from('profiles')
+        .select('total_coins')
+        .eq('id', recipientWallet.user_id)
+        .single();
+
+      if (recipientProfile) {
+        await supabase
+          .from('profiles')
+          .update({ total_coins: recipientProfile.total_coins + amount })
+          .eq('id', recipientWallet.user_id);
+      }
+
+      // Record transfer
+      const { error: transferError } = await supabase
+        .from('wallet_transfers')
+        .insert({
+          from_wallet_id: activeWallet.id,
+          to_wallet_id: recipientWallet.id,
+          from_address: activeWallet.wallet_address,
+          to_address: toAddress,
+          amount,
+          fee: 0,
+          status: 'completed',
+          tx_hash: txHash,
+          note: note || null,
+        });
+
+      if (transferError) throw transferError;
+
+      // Record transactions
+      await supabase.from('coin_transactions').insert({
+        user_id: user.id,
+        amount: -amount,
+        transaction_type: 'transfer_out',
+        description: `Poslano na ${toAddress.slice(0, 8)}...${toAddress.slice(-6)}`,
+      });
+
+      await supabase.from('coin_transactions').insert({
+        user_id: recipientWallet.user_id,
+        amount: amount,
+        transaction_type: 'transfer_in',
+        description: `Primljeno od ${activeWallet.wallet_address.slice(0, 8)}...${activeWallet.wallet_address.slice(-6)}`,
+      });
+
+      await fetchTransfers();
+
+      return { success: true, txHash };
+    } catch (error) {
+      console.error('Error sending coins:', error);
+      return { success: false, error: 'Greška pri slanju' };
+    }
+  }, [user, activeWallet, validateAddress, fetchTransfers]);
+
   return {
     wallets,
     activeWallet,
+    transfers,
     loading,
     createWallet,
     importWallet,
@@ -239,6 +440,9 @@ export const useWallet = (): UseWalletReturn => {
     deleteWallet,
     renameWallet,
     verifyMnemonic,
+    sendCoins,
+    validateAddress,
     refreshWallets: fetchWallets,
+    refreshTransfers: fetchTransfers,
   };
 };

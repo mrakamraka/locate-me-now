@@ -29,14 +29,17 @@ import {
   Trash2, 
   Star,
   ChevronDown,
-  ExternalLink,
-  Shield
+  Shield,
+  Send,
+  ArrowDownLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Wallet as WalletType } from '@/hooks/useWallet';
 import { Profile } from '@/hooks/useWalkCoins';
 import CreateWalletModal from './CreateWalletModal';
 import ImportWalletModal from './ImportWalletModal';
+import SendModal from './SendModal';
+import ReceiveModal from './ReceiveModal';
 
 interface WalletCardProps {
   wallets: WalletType[];
@@ -49,6 +52,8 @@ interface WalletCardProps {
   onDeleteWallet: (walletId: string) => Promise<boolean>;
   onRenameWallet: (walletId: string, newName: string) => Promise<boolean>;
   verifyMnemonic: (mnemonic: string) => boolean;
+  onSendCoins: (toAddress: string, amount: number, note?: string) => Promise<{ success: boolean; error?: string; txHash?: string }>;
+  validateAddress: (address: string) => Promise<{ valid: boolean; exists: boolean }>;
 }
 
 const WalletCard: React.FC<WalletCardProps> = ({
@@ -62,11 +67,15 @@ const WalletCard: React.FC<WalletCardProps> = ({
   onDeleteWallet,
   onRenameWallet,
   verifyMnemonic,
+  onSendCoins,
+  validateAddress,
 }) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [renameModalOpen, setRenameModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [sendModalOpen, setSendModalOpen] = useState(false);
+  const [receiveModalOpen, setReceiveModalOpen] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<WalletType | null>(null);
   const [newName, setNewName] = useState('');
   const [copied, setCopied] = useState(false);
@@ -274,6 +283,25 @@ const WalletCard: React.FC<WalletCardProps> = ({
             <p className="text-crypto-gold font-semibold">WALK</p>
           </div>
 
+          {/* Send/Receive Buttons */}
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setSendModalOpen(true)}
+              className="flex-1 bg-crypto-gold hover:bg-crypto-gold/90 text-black font-bold"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              Pošalji
+            </Button>
+            <Button
+              onClick={() => setReceiveModalOpen(true)}
+              variant="outline"
+              className="flex-1 border-crypto-green text-crypto-green hover:bg-crypto-green/10"
+            >
+              <ArrowDownLeft className="w-4 h-4 mr-2" />
+              Primi
+            </Button>
+          </div>
+
           {/* Address */}
           <div className="bg-crypto-dark/50 rounded-lg p-3">
             <div className="flex items-center justify-between">
@@ -317,6 +345,26 @@ const WalletCard: React.FC<WalletCardProps> = ({
         onImport={onImportWallet}
         verifyMnemonic={verifyMnemonic}
       />
+
+      {activeWallet && (
+        <>
+          <SendModal
+            isOpen={sendModalOpen}
+            onClose={() => setSendModalOpen(false)}
+            onSend={onSendCoins}
+            validateAddress={validateAddress}
+            currentBalance={profile?.total_coins || 0}
+            walletAddress={activeWallet.wallet_address}
+          />
+
+          <ReceiveModal
+            isOpen={receiveModalOpen}
+            onClose={() => setReceiveModalOpen(false)}
+            walletAddress={activeWallet.wallet_address}
+            walletName={activeWallet.wallet_name}
+          />
+        </>
+      )}
 
       {/* Rename Modal */}
       <Dialog open={renameModalOpen} onOpenChange={setRenameModalOpen}>
