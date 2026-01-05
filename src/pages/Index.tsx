@@ -44,6 +44,8 @@ const Index: React.FC = () => {
     deleteWallet,
     renameWallet,
     verifyMnemonic,
+    sendCoins,
+    validateAddress,
   } = useWallet();
   const {
     currentLocation,
@@ -252,6 +254,8 @@ const Index: React.FC = () => {
               onDeleteWallet={deleteWallet}
               onRenameWallet={renameWallet}
               verifyMnemonic={verifyMnemonic}
+              onSendCoins={sendCoins}
+              validateAddress={validateAddress}
             />
             <Leaderboard />
             <ReferralCard profile={profile} />

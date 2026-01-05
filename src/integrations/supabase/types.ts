@@ -142,6 +142,63 @@ export type Database = {
           },
         ]
       }
+      wallet_transfers: {
+        Row: {
+          amount: number
+          created_at: string
+          fee: number
+          from_address: string
+          from_wallet_id: string | null
+          id: string
+          note: string | null
+          status: string
+          to_address: string
+          to_wallet_id: string | null
+          tx_hash: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          fee?: number
+          from_address: string
+          from_wallet_id?: string | null
+          id?: string
+          note?: string | null
+          status?: string
+          to_address: string
+          to_wallet_id?: string | null
+          tx_hash: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          fee?: number
+          from_address?: string
+          from_wallet_id?: string | null
+          id?: string
+          note?: string | null
+          status?: string
+          to_address?: string
+          to_wallet_id?: string | null
+          tx_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transfers_from_wallet_id_fkey"
+            columns: ["from_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_to_wallet_id_fkey"
+            columns: ["to_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallets: {
         Row: {
           address_checksum: string
