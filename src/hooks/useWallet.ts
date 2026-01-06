@@ -43,6 +43,7 @@ export interface UseWalletReturn {
   importWallet: (mnemonic: string, name?: string) => Promise<Wallet | null>;
   setActiveWallet: (walletId: string) => Promise<void>;
   deleteWallet: (walletId: string) => Promise<boolean>;
+  removeWallet: (walletId: string) => void;
   renameWallet: (walletId: string, newName: string) => Promise<boolean>;
   verifyMnemonic: (mnemonic: string) => boolean;
   sendCoins: (toAddress: string, amount: number, note?: string) => Promise<{ success: boolean; error?: string; txHash?: string }>;
@@ -276,6 +277,20 @@ export const useWallet = (): UseWalletReturn => {
     }
   }, [user, fetchWallets]);
 
+  // Remove wallet from local state only (for testing/re-importing)
+  const removeWallet = useCallback((walletId: string) => {
+    setWallets(prev => {
+      const remaining = prev.filter(w => w.id !== walletId);
+      // If we removed the active wallet, set a new one
+      if (activeWallet?.id === walletId && remaining.length > 0) {
+        setActiveWalletState(remaining[0]);
+      } else if (remaining.length === 0) {
+        setActiveWalletState(null);
+      }
+      return remaining;
+    });
+  }, [activeWallet]);
+
   const renameWallet = useCallback(async (walletId: string, newName: string): Promise<boolean> => {
     if (!user) return false;
 
@@ -438,6 +453,7 @@ export const useWallet = (): UseWalletReturn => {
     importWallet,
     setActiveWallet,
     deleteWallet,
+    removeWallet,
     renameWallet,
     verifyMnemonic,
     sendCoins,
