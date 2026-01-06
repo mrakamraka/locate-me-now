@@ -31,7 +31,8 @@ import {
   ChevronDown,
   Shield,
   Send,
-  ArrowDownLeft
+  ArrowDownLeft,
+  LogOut
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Wallet as WalletType } from '@/hooks/useWallet';
@@ -50,6 +51,7 @@ interface WalletCardProps {
   onImportWallet: (mnemonic: string, name?: string) => Promise<any>;
   onSetActiveWallet: (walletId: string) => Promise<void>;
   onDeleteWallet: (walletId: string) => Promise<boolean>;
+  onRemoveWallet: (walletId: string) => void;
   onRenameWallet: (walletId: string, newName: string) => Promise<boolean>;
   verifyMnemonic: (mnemonic: string) => boolean;
   onSendCoins: (toAddress: string, amount: number, note?: string) => Promise<{ success: boolean; error?: string; txHash?: string }>;
@@ -65,6 +67,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
   onImportWallet,
   onSetActiveWallet,
   onDeleteWallet,
+  onRemoveWallet,
   onRenameWallet,
   verifyMnemonic,
   onSendCoins,
@@ -255,6 +258,18 @@ const WalletCard: React.FC<WalletCardProps> = ({
                 >
                   <Pencil className="w-4 h-4 mr-2" />
                   Preimenuj
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (activeWallet) {
+                      onRemoveWallet(activeWallet.id);
+                      toast.success('Wallet uklonjen iz prikaza. Možeš ga ponovo uvesti.');
+                    }
+                  }}
+                  className="text-orange-400 hover:bg-orange-500/10 cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Ukloni (za test)
                 </DropdownMenuItem>
                 {wallets.length > 1 && (
                   <DropdownMenuItem

@@ -42,6 +42,7 @@ const Index: React.FC = () => {
     importWallet,
     setActiveWallet,
     deleteWallet,
+    removeWallet,
     renameWallet,
     verifyMnemonic,
     sendCoins,
@@ -252,6 +253,7 @@ const Index: React.FC = () => {
               onImportWallet={importWallet}
               onSetActiveWallet={setActiveWallet}
               onDeleteWallet={deleteWallet}
+              onRemoveWallet={removeWallet}
               onRenameWallet={renameWallet}
               verifyMnemonic={verifyMnemonic}
               onSendCoins={sendCoins}
