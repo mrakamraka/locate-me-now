@@ -45,6 +45,7 @@ const Index: React.FC = () => {
     removeWallet,
     renameWallet,
     verifyMnemonic,
+    deriveAddressFromMnemonic,
     sendCoins,
     validateAddress,
   } = useWallet();
@@ -256,6 +257,7 @@ const Index: React.FC = () => {
               onRemoveWallet={removeWallet}
               onRenameWallet={renameWallet}
               verifyMnemonic={verifyMnemonic}
+              deriveAddressFromMnemonic={deriveAddressFromMnemonic}
               onSendCoins={sendCoins}
               validateAddress={validateAddress}
             />
