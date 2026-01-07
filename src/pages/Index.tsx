@@ -10,6 +10,8 @@ import ReferralCard from '@/components/ReferralCard';
 import TransactionHistory from '@/components/TransactionHistory';
 import TrackingControls from '@/components/TrackingControls';
 import Leaderboard from '@/components/Leaderboard';
+import PersonalRank from '@/components/PersonalRank';
+import WalkHistory from '@/components/WalkHistory';
 import WalletCard from '@/components/wallet/WalletCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -261,6 +263,17 @@ const Index: React.FC = () => {
               onSendCoins={sendCoins}
               validateAddress={validateAddress}
             />
+            
+            {/* Personal Rank */}
+            <PersonalRank
+              totalDistance={profile?.total_distance_km || 0}
+              totalCoins={profile?.total_coins || 0}
+              currentLevel={profile?.current_level || 1}
+            />
+
+            {/* Walk History */}
+            <WalkHistory transactions={transactions} />
+
             <Leaderboard />
             <ReferralCard profile={profile} />
             <TransactionHistory transactions={transactions} />

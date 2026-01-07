@@ -33,7 +33,8 @@ import {
   Send,
   ArrowDownLeft,
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  QrCode
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Wallet as WalletType } from '@/hooks/useWallet';
@@ -43,6 +44,7 @@ import ImportWalletModal from './ImportWalletModal';
 import SendModal from './SendModal';
 import ReceiveModal from './ReceiveModal';
 import { VerifyBackupModal } from './VerifyBackupModal';
+import QRCodeModal from './QRCodeModal';
 
 interface WalletCardProps {
   wallets: WalletType[];
@@ -84,6 +86,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
   const [verifyBackupModalOpen, setVerifyBackupModalOpen] = useState(false);
+  const [qrCodeModalOpen, setQrCodeModalOpen] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<WalletType | null>(null);
   const [newName, setNewName] = useState('');
   const [copied, setCopied] = useState(false);
@@ -342,6 +345,14 @@ const WalletCard: React.FC<WalletCardProps> = ({
                 <Button
                   variant="ghost"
                   size="icon"
+                  onClick={() => setQrCodeModalOpen(true)}
+                  className="text-crypto-muted hover:text-white hover:bg-crypto-purple/10"
+                >
+                  <QrCode className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={handleCopyAddress}
                   className="text-crypto-muted hover:text-white hover:bg-crypto-gold/10"
                 >
@@ -387,6 +398,13 @@ const WalletCard: React.FC<WalletCardProps> = ({
           <ReceiveModal
             isOpen={receiveModalOpen}
             onClose={() => setReceiveModalOpen(false)}
+            walletAddress={activeWallet.wallet_address}
+            walletName={activeWallet.wallet_name}
+          />
+
+          <QRCodeModal
+            isOpen={qrCodeModalOpen}
+            onClose={() => setQrCodeModalOpen(false)}
             walletAddress={activeWallet.wallet_address}
             walletName={activeWallet.wallet_name}
           />
