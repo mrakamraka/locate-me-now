@@ -46,6 +46,7 @@ export interface UseWalletReturn {
   removeWallet: (walletId: string) => void;
   renameWallet: (walletId: string, newName: string) => Promise<boolean>;
   verifyMnemonic: (mnemonic: string) => boolean;
+  deriveAddressFromMnemonic: (mnemonic: string) => string | null;
   sendCoins: (toAddress: string, amount: number, note?: string) => Promise<{ success: boolean; error?: string; txHash?: string }>;
   validateAddress: (address: string) => Promise<{ valid: boolean; exists: boolean }>;
   refreshWallets: () => Promise<void>;
@@ -314,6 +315,17 @@ export const useWallet = (): UseWalletReturn => {
     return bip39.validateMnemonic(mnemonic.trim().toLowerCase());
   }, []);
 
+  const deriveAddressFromMnemonic = useCallback((mnemonic: string): string | null => {
+    try {
+      const normalizedMnemonic = mnemonic.trim().toLowerCase();
+      if (!bip39.validateMnemonic(normalizedMnemonic)) return null;
+      const { address } = deriveWalletFromMnemonic(normalizedMnemonic);
+      return address;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const validateAddress = useCallback(async (address: string): Promise<{ valid: boolean; exists: boolean }> => {
     // Check if it's a valid Ethereum-style address
     const isValid = ethers.isAddress(address);
@@ -456,6 +468,7 @@ export const useWallet = (): UseWalletReturn => {
     removeWallet,
     renameWallet,
     verifyMnemonic,
+    deriveAddressFromMnemonic,
     sendCoins,
     validateAddress,
     refreshWallets: fetchWallets,

@@ -32,7 +32,8 @@ import {
   Shield,
   Send,
   ArrowDownLeft,
-  LogOut
+  LogOut,
+  ShieldCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Wallet as WalletType } from '@/hooks/useWallet';
@@ -41,6 +42,7 @@ import CreateWalletModal from './CreateWalletModal';
 import ImportWalletModal from './ImportWalletModal';
 import SendModal from './SendModal';
 import ReceiveModal from './ReceiveModal';
+import { VerifyBackupModal } from './VerifyBackupModal';
 
 interface WalletCardProps {
   wallets: WalletType[];
@@ -54,6 +56,7 @@ interface WalletCardProps {
   onRemoveWallet: (walletId: string) => void;
   onRenameWallet: (walletId: string, newName: string) => Promise<boolean>;
   verifyMnemonic: (mnemonic: string) => boolean;
+  deriveAddressFromMnemonic: (mnemonic: string) => string | null;
   onSendCoins: (toAddress: string, amount: number, note?: string) => Promise<{ success: boolean; error?: string; txHash?: string }>;
   validateAddress: (address: string) => Promise<{ valid: boolean; exists: boolean }>;
 }
@@ -70,6 +73,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
   onRemoveWallet,
   onRenameWallet,
   verifyMnemonic,
+  deriveAddressFromMnemonic,
   onSendCoins,
   validateAddress,
 }) => {
@@ -79,6 +83,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
+  const [verifyBackupModalOpen, setVerifyBackupModalOpen] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<WalletType | null>(null);
   const [newName, setNewName] = useState('');
   const [copied, setCopied] = useState(false);
@@ -260,6 +265,13 @@ const WalletCard: React.FC<WalletCardProps> = ({
                   Preimenuj
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  onClick={() => setVerifyBackupModalOpen(true)}
+                  className="text-primary hover:bg-primary/10 cursor-pointer"
+                >
+                  <ShieldCheck className="w-4 h-4 mr-2" />
+                  Verifikuj Backup
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() => {
                     if (activeWallet) {
                       onRemoveWallet(activeWallet.id);
@@ -428,6 +440,17 @@ const WalletCard: React.FC<WalletCardProps> = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Verify Backup Modal */}
+      {activeWallet && (
+        <VerifyBackupModal
+          isOpen={verifyBackupModalOpen}
+          onClose={() => setVerifyBackupModalOpen(false)}
+          walletAddress={activeWallet.wallet_address}
+          verifyMnemonic={verifyMnemonic}
+          deriveAddressFromMnemonic={deriveAddressFromMnemonic}
+        />
+      )}
     </>
   );
 };
