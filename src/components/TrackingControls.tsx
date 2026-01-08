@@ -53,12 +53,12 @@ const TrackingControls: React.FC<TrackingControlsProps> = ({
         {isTracking ? (
           <>
             <Square className="w-5 h-5 mr-2" />
-            Zaustavi zaradu
+            Stop Earning
           </>
         ) : (
           <>
             <Zap className="w-5 h-5 mr-2" />
-            Počni zarađivati
+            Start Earning
           </>
         )}
       </Button>
@@ -74,7 +74,7 @@ const TrackingControls: React.FC<TrackingControlsProps> = ({
           />
           <Label htmlFor="show-path" className="flex items-center gap-1.5 cursor-pointer text-crypto-muted hover:text-white transition-colors">
             <Route className="w-4 h-4" />
-            Putanja
+            Path
           </Label>
         </div>
 
@@ -87,7 +87,7 @@ const TrackingControls: React.FC<TrackingControlsProps> = ({
           />
           <Label htmlFor="center-location" className="flex items-center gap-1.5 cursor-pointer text-crypto-muted hover:text-white transition-colors">
             <MapPin className="w-4 h-4" />
-            Centriraj
+            Center
           </Label>
         </div>
       </div>
@@ -102,26 +102,26 @@ const TrackingControls: React.FC<TrackingControlsProps> = ({
               className="ml-auto border-crypto-border text-crypto-muted hover:text-white hover:bg-crypto-card hover:border-red-500/50"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Obriši ({historyCount})
+              Clear ({historyCount})
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent className="bg-crypto-card border-crypto-border">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-white">Obriši historiju lokacija?</AlertDialogTitle>
+              <AlertDialogTitle className="text-white">Clear location history?</AlertDialogTitle>
               <AlertDialogDescription className="text-crypto-muted">
-                Ova akcija će trajno obrisati {historyCount} zapisanih lokacija.
-                WALK Coins ostaju sigurni!
+                This action will permanently delete {historyCount} recorded locations.
+                Your WALK Coins remain safe!
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel className="bg-crypto-dark border-crypto-border text-crypto-muted hover:text-white">
-                Odustani
+                Cancel
               </AlertDialogCancel>
               <AlertDialogAction 
                 onClick={onClearHistory} 
                 className="bg-red-500/80 hover:bg-red-500/70 text-white"
               >
-                Obriši
+                Clear
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

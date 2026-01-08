@@ -41,7 +41,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions })
       <CardHeader className="pb-2">
         <CardTitle className="text-lg text-white flex items-center gap-2">
           <History className="w-5 h-5 text-crypto-muted" />
-          Transakcije
+          Transactions
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -49,8 +49,8 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions })
           {transactions.length === 0 ? (
             <div className="text-center py-8">
               <Coins className="w-12 h-12 text-crypto-muted/30 mx-auto mb-3" />
-              <p className="text-crypto-muted text-sm">Nema transakcija</p>
-              <p className="text-crypto-muted/60 text-xs">Počni hodati da zaradiš WALK Coins!</p>
+              <p className="text-crypto-muted text-sm">No transactions</p>
+              <p className="text-crypto-muted/60 text-xs">Start walking to earn WALK Coins!</p>
             </div>
           ) : (
             <div className="space-y-2">

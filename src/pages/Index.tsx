@@ -4,6 +4,7 @@ import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { useAuth } from '@/hooks/useAuth';
 import { useWalkCoins } from '@/hooks/useWalkCoins';
 import { useWallet } from '@/hooks/useWallet';
+import { useStepCounter } from '@/hooks/useStepCounter';
 import LocationMap from '@/components/LocationMap';
 import CryptoStats from '@/components/CryptoStats';
 import ReferralCard from '@/components/ReferralCard';
@@ -15,7 +16,7 @@ import WalkHistory from '@/components/WalkHistory';
 import WalletCard from '@/components/wallet/WalletCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, AlertCircle, LogOut, Zap } from 'lucide-react';
+import { Coins, AlertCircle, LogOut, Zap, Footprints } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 
@@ -67,6 +68,9 @@ const Index: React.FC = () => {
   const lastRewardedDistanceRef = useRef(0);
   const previousLocationRef = useRef<{ latitude: number; longitude: number } | null>(null);
 
+  // Step counter hook
+  const { steps, resetSteps } = useStepCounter(isTracking, sessionDistance);
+
   // Redirect to auth if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
@@ -110,7 +114,7 @@ const Index: React.FC = () => {
       
       const coinsEarned = Math.floor(newKm * 100 * (1 + (profile?.referral_count || 0)));
       toast.success(`+${coinsEarned} WALK Coins! 🚀`, {
-        description: `Pređeno ${newKm.toFixed(1)} km`,
+        description: `Walked ${newKm.toFixed(1)} km`,
       });
     }
   }, [sessionDistance, user, addWalkReward, profile?.referral_count]);
@@ -120,13 +124,14 @@ const Index: React.FC = () => {
     setSessionDistance(0);
     lastRewardedDistanceRef.current = 0;
     previousLocationRef.current = null;
-    toast.success('Praćenje pokrenuto! Hodaj i zarađuj! 💰');
+    resetSteps();
+    toast.success('Tracking started! Walk and earn! 💰');
   };
 
   const handleStopTracking = () => {
     stopTracking();
     if (sessionDistance > 0) {
-      toast.info(`Sesija završena: ${sessionDistance.toFixed(2)} km`);
+      toast.info(`Session complete: ${sessionDistance.toFixed(2)} km, ${steps.toLocaleString()} steps`);
     }
   };
 
@@ -134,7 +139,8 @@ const Index: React.FC = () => {
     await clearHistory();
     setSessionDistance(0);
     lastRewardedDistanceRef.current = 0;
-    toast.success('Historija obrisana');
+    resetSteps();
+    toast.success('History cleared');
   };
 
   const handleSignOut = async () => {
@@ -147,7 +153,7 @@ const Index: React.FC = () => {
       <div className="min-h-screen bg-crypto-dark flex items-center justify-center">
         <div className="text-center">
           <Coins className="w-16 h-16 text-crypto-gold animate-pulse mx-auto mb-4" />
-          <p className="text-crypto-muted">Učitavanje...</p>
+          <p className="text-crypto-muted">Loading...</p>
         </div>
       </div>
     );
@@ -179,11 +185,19 @@ const Index: React.FC = () => {
             
             <div className="flex items-center gap-4">
               {isTracking && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-crypto-green/10 border border-crypto-green/30">
-                  <Zap className="w-4 h-4 text-crypto-green animate-pulse" />
-                  <span className="text-sm text-crypto-green font-medium">
-                    {sessionDistance.toFixed(2)} km
-                  </span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-crypto-green/10 border border-crypto-green/30">
+                    <Zap className="w-4 h-4 text-crypto-green animate-pulse" />
+                    <span className="text-sm text-crypto-green font-medium">
+                      {sessionDistance.toFixed(2)} km
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-crypto-purple/10 border border-crypto-purple/30">
+                    <Footprints className="w-4 h-4 text-crypto-purple animate-pulse" />
+                    <span className="text-sm text-crypto-purple font-medium">
+                      {steps.toLocaleString()} steps
+                    </span>
+                  </div>
                 </div>
               )}
               
@@ -212,7 +226,7 @@ const Index: React.FC = () => {
         )}
 
         {/* Crypto Stats */}
-        <CryptoStats profile={profile} loading={coinsLoading} />
+        <CryptoStats profile={profile} loading={coinsLoading} sessionSteps={steps} isTracking={isTracking} />
 
         {/* Controls */}
         <TrackingControls

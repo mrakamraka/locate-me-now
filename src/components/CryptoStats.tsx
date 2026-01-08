@@ -1,18 +1,20 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Coins, TrendingUp, Users, Award, Zap } from 'lucide-react';
+import { Coins, TrendingUp, Users, Award, Footprints } from 'lucide-react';
 import { Profile } from '@/hooks/useWalkCoins';
 
 interface CryptoStatsProps {
   profile: Profile | null;
   loading: boolean;
+  sessionSteps?: number;
+  isTracking?: boolean;
 }
 
-const CryptoStats: React.FC<CryptoStatsProps> = ({ profile, loading }) => {
+const CryptoStats: React.FC<CryptoStatsProps> = ({ profile, loading, sessionSteps = 0, isTracking = false }) => {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[...Array(4)].map((_, i) => (
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {[...Array(5)].map((_, i) => (
           <Card key={i} className="bg-crypto-card border-crypto-border animate-pulse">
             <CardContent className="p-4">
               <div className="h-20"></div>
@@ -41,7 +43,7 @@ const CryptoStats: React.FC<CryptoStatsProps> = ({ profile, loading }) => {
       borderColor: 'border-crypto-purple/30',
     },
     {
-      label: 'Ukupno km',
+      label: 'Total km',
       value: Number(profile?.total_distance_km || 0).toFixed(2),
       icon: TrendingUp,
       color: 'text-crypto-green',
@@ -49,7 +51,16 @@ const CryptoStats: React.FC<CryptoStatsProps> = ({ profile, loading }) => {
       borderColor: 'border-crypto-green/30',
     },
     {
-      label: 'Referali',
+      label: 'Steps',
+      value: isTracking ? sessionSteps.toLocaleString() : '0',
+      icon: Footprints,
+      color: 'text-orange-400',
+      bgColor: 'bg-orange-500/10',
+      borderColor: 'border-orange-500/30',
+      highlight: isTracking,
+    },
+    {
+      label: 'Referrals',
       value: profile?.referral_count || 0,
       icon: Users,
       color: 'text-crypto-blue',
@@ -59,11 +70,13 @@ const CryptoStats: React.FC<CryptoStatsProps> = ({ profile, loading }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
       {stats.map((stat) => (
         <Card 
           key={stat.label} 
-          className={`bg-crypto-card/80 backdrop-blur-xl border ${stat.borderColor} hover:scale-105 transition-transform`}
+          className={`bg-crypto-card/80 backdrop-blur-xl border ${stat.borderColor} hover:scale-105 transition-transform ${
+            stat.highlight ? 'ring-2 ring-orange-500/30 animate-pulse' : ''
+          }`}
         >
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">

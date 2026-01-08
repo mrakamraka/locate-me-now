@@ -96,14 +96,14 @@ const WalletCard: React.FC<WalletCardProps> = ({
     await navigator.clipboard.writeText(activeWallet.wallet_address);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success('Adresa kopirana!');
+    toast.success('Address copied!');
   };
 
   const handleRename = async () => {
     if (!selectedWallet || !newName.trim()) return;
     const success = await onRenameWallet(selectedWallet.id, newName.trim());
     if (success) {
-      toast.success('Wallet preimenovan!');
+      toast.success('Wallet renamed!');
       setRenameModalOpen(false);
       setNewName('');
     }
@@ -113,7 +113,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
     if (!selectedWallet) return;
     const success = await onDeleteWallet(selectedWallet.id);
     if (success) {
-      toast.success('Wallet obrisan!');
+      toast.success('Wallet deleted!');
       setDeleteModalOpen(false);
     }
   };
@@ -143,9 +143,9 @@ const WalletCard: React.FC<WalletCardProps> = ({
                 <Wallet className="w-8 h-8 text-crypto-gold" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white mb-1">Kreiraj WALKCOINS Wallet</h3>
+                <h3 className="text-lg font-bold text-white mb-1">Create WALKCOINS Wallet</h3>
                 <p className="text-crypto-muted text-sm">
-                  Kreiraj svoj non-custodial wallet za sigurno čuvanje WALK coins
+                  Create your non-custodial wallet to securely store WALK coins
                 </p>
               </div>
               <div className="flex gap-3 justify-center">
@@ -154,7 +154,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
                   className="bg-crypto-gold hover:bg-crypto-gold/90 text-black font-bold"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Novi Wallet
+                  New Wallet
                 </Button>
                 <Button
                   variant="outline"
@@ -162,7 +162,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
                   className="border-crypto-purple text-crypto-purple hover:bg-crypto-purple/10"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Uvezi
+                  Import
                 </Button>
               </div>
             </div>
@@ -235,14 +235,14 @@ const WalletCard: React.FC<WalletCardProps> = ({
                       className="text-crypto-gold hover:bg-crypto-gold/10 cursor-pointer"
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Dodaj Novi Wallet
+                      Add New Wallet
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setImportModalOpen(true)}
                       className="text-crypto-purple hover:bg-crypto-purple/10 cursor-pointer"
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      Uvezi Wallet
+                      Import Wallet
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -265,28 +265,28 @@ const WalletCard: React.FC<WalletCardProps> = ({
                   className="text-white hover:bg-crypto-gold/10 cursor-pointer"
                 >
                   <Pencil className="w-4 h-4 mr-2" />
-                  Preimenuj
+                  Rename
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setVerifyBackupModalOpen(true)}
                   className="text-primary hover:bg-primary/10 cursor-pointer"
                 >
                   <ShieldCheck className="w-4 h-4 mr-2" />
-                  Verifikuj Backup
+                  Verify Backup
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={async () => {
                     if (activeWallet) {
                       const success = await onRemoveWallet(activeWallet.id);
                       if (success) {
-                        toast.success('Wallet uklonjen! Možeš ga ponovo uvesti sa istom seed frazom.');
+                        toast.success('Wallet removed! You can re-import it with the same seed phrase.');
                       }
                     }
                   }}
                   className="text-orange-400 hover:bg-orange-500/10 cursor-pointer"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  Ukloni Wallet
+                  Remove Wallet
                 </DropdownMenuItem>
                 {wallets.length > 1 && (
                   <DropdownMenuItem
@@ -297,7 +297,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
                     className="text-red-400 hover:bg-red-500/10 cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Obriši
+                    Delete
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -308,7 +308,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
         <CardContent className="relative space-y-4">
           {/* Balance */}
           <div className="text-center py-4">
-            <p className="text-crypto-muted text-sm mb-1">Stanje</p>
+            <p className="text-crypto-muted text-sm mb-1">Balance</p>
             <p className="text-4xl font-bold text-white">
               {profile?.total_coins.toLocaleString() || '0'}
             </p>
@@ -322,7 +322,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
               className="flex-1 bg-crypto-gold hover:bg-crypto-gold/90 text-black font-bold"
             >
               <Send className="w-4 h-4 mr-2" />
-              Pošalji
+              Send
             </Button>
             <Button
               onClick={() => setReceiveModalOpen(true)}
@@ -330,7 +330,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
               className="flex-1 border-crypto-green text-crypto-green hover:bg-crypto-green/10"
             >
               <ArrowDownLeft className="w-4 h-4 mr-2" />
-              Primi
+              Receive
             </Button>
           </div>
 
@@ -338,7 +338,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
           <div className="bg-crypto-dark/50 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-crypto-muted text-xs mb-1">Wallet Adresa</p>
+                <p className="text-crypto-muted text-xs mb-1">Wallet Address</p>
                 <p className="text-white font-mono text-sm">
                   {activeWallet ? shortenAddress(activeWallet.wallet_address) : '...'}
                 </p>
@@ -367,7 +367,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
           {/* Security Badge */}
           <div className="flex items-center justify-center gap-2 text-crypto-muted text-xs">
             <Shield className="w-3 h-3 text-green-500" />
-            <span>Non-Custodial • Potpuna Kontrola</span>
+            <span>Non-Custodial • Full Control</span>
           </div>
         </CardContent>
       </Card>
@@ -417,11 +417,11 @@ const WalletCard: React.FC<WalletCardProps> = ({
       <Dialog open={renameModalOpen} onOpenChange={setRenameModalOpen}>
         <DialogContent className="bg-crypto-card border-crypto-border">
           <DialogHeader>
-            <DialogTitle className="text-white">Preimenuj Wallet</DialogTitle>
+            <DialogTitle className="text-white">Rename Wallet</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label className="text-white">Novo Ime</Label>
+              <Label className="text-white">New Name</Label>
               <Input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
@@ -431,10 +431,10 @@ const WalletCard: React.FC<WalletCardProps> = ({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRenameModalOpen(false)} className="border-crypto-border">
-              Odustani
+              Cancel
             </Button>
             <Button onClick={handleRename} className="bg-crypto-gold text-black">
-              Sačuvaj
+              Save
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -444,18 +444,18 @@ const WalletCard: React.FC<WalletCardProps> = ({
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent className="bg-crypto-card border-crypto-border">
           <DialogHeader>
-            <DialogTitle className="text-white">Obriši Wallet</DialogTitle>
+            <DialogTitle className="text-white">Delete Wallet</DialogTitle>
             <DialogDescription className="text-crypto-muted">
-              Da li ste sigurni da želite obrisati wallet "{selectedWallet?.wallet_name}"?
-              Ova akcija se ne može poništiti. Ako imate seed frazu, možete uvijek ponovo uvesti wallet.
+              Are you sure you want to delete wallet "{selectedWallet?.wallet_name}"?
+              This action cannot be undone. If you have your seed phrase, you can always re-import the wallet.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteModalOpen(false)} className="border-crypto-border">
-              Odustani
+              Cancel
             </Button>
             <Button onClick={handleDelete} variant="destructive">
-              Obriši
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -467,7 +467,6 @@ const WalletCard: React.FC<WalletCardProps> = ({
           isOpen={verifyBackupModalOpen}
           onClose={() => setVerifyBackupModalOpen(false)}
           walletAddress={activeWallet.wallet_address}
-          verifyMnemonic={verifyMnemonic}
           deriveAddressFromMnemonic={deriveAddressFromMnemonic}
         />
       )}

@@ -45,7 +45,7 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
         setStep('seed');
       }
     } catch (error) {
-      toast.error('Greška pri kreiranju walleta');
+      toast.error('Error creating wallet');
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
     await navigator.clipboard.writeText(mnemonic);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success('Seed fraza kopirana!');
+    toast.success('Seed phrase copied!');
   };
 
   const handleVerify = () => {
@@ -66,7 +66,7 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
     if (isCorrect) {
       setStep('complete');
     } else {
-      toast.error('Netačne riječi. Provjerite seed frazu.');
+      toast.error('Incorrect words. Please check your seed phrase.');
     }
   };
 
@@ -78,7 +78,7 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
     setCopied(false);
     setVerifyInputs(['', '', '']);
     onClose();
-    toast.success('Wallet uspješno kreiran!');
+    toast.success('Wallet successfully created!');
   };
 
   const resetAndClose = () => {
@@ -100,25 +100,25 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <Wallet className="w-5 h-5 text-crypto-gold" />
-            {step === 'name' && 'Kreiraj Novi Wallet'}
-            {step === 'seed' && 'Sačuvaj Seed Frazu'}
-            {step === 'verify' && 'Potvrdi Seed Frazu'}
-            {step === 'complete' && 'Wallet Kreiran!'}
+            {step === 'name' && 'Create New Wallet'}
+            {step === 'seed' && 'Save Seed Phrase'}
+            {step === 'verify' && 'Verify Seed Phrase'}
+            {step === 'complete' && 'Wallet Created!'}
           </DialogTitle>
           <DialogDescription className="text-crypto-muted">
-            {step === 'name' && 'Kreiraj svoj WALKCOINS non-custodial wallet'}
-            {step === 'seed' && 'Ova fraza je jedini način za pristup walletu. Nikada je ne dijelite!'}
-            {step === 'verify' && 'Potvrdite da ste sačuvali seed frazu'}
-            {step === 'complete' && 'Vaš wallet je spreman za korištenje'}
+            {step === 'name' && 'Create your WALKCOINS non-custodial wallet'}
+            {step === 'seed' && 'This phrase is the only way to access your wallet. Never share it!'}
+            {step === 'verify' && 'Confirm that you have saved your seed phrase'}
+            {step === 'complete' && 'Your wallet is ready to use'}
           </DialogDescription>
         </DialogHeader>
 
         {step === 'name' && (
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label className="text-white">Ime Walleta (opcionalno)</Label>
+              <Label className="text-white">Wallet Name (optional)</Label>
               <Input
-                placeholder="Npr. Glavni Wallet"
+                placeholder="e.g. Main Wallet"
                 value={walletName}
                 onChange={(e) => setWalletName(e.target.value)}
                 className="bg-crypto-dark border-crypto-border text-white"
@@ -130,8 +130,8 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
                 <div className="text-sm text-amber-200">
                   <p className="font-semibold mb-1">Non-Custodial Wallet</p>
                   <p className="text-amber-300/80">
-                    Dobićete 24-riječi seed frazu. Ova fraza je JEDINI način za pristup vašim WALKCOINS.
-                    Sačuvajte je na sigurnom mjestu offline.
+                    You will receive a 24-word seed phrase. This phrase is the ONLY way to access your WALKCOINS.
+                    Store it in a safe place offline.
                   </p>
                 </div>
               </div>
@@ -141,7 +141,7 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
               disabled={loading}
               className="w-full bg-crypto-gold hover:bg-crypto-gold/90 text-black font-bold"
             >
-              {loading ? 'Kreiranje...' : 'Kreiraj Wallet'}
+              {loading ? 'Creating...' : 'Create Wallet'}
             </Button>
           </div>
         )}
@@ -152,10 +152,10 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
               <div className="flex gap-3">
                 <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
                 <div className="text-sm text-red-200">
-                  <p className="font-semibold mb-1">UPOZORENJE - SAČUVAJTE OVO!</p>
+                  <p className="font-semibold mb-1">WARNING - SAVE THIS!</p>
                   <p className="text-red-300/80">
-                    Ova seed fraza se prikazuje SAMO JEDNOM. Nikada je nećemo ponovo prikazati.
-                    Zapišite je na papir i čuvajte na sigurnom mjestu.
+                    This seed phrase is shown ONLY ONCE. We will never show it again.
+                    Write it down on paper and keep it in a safe place.
                   </p>
                 </div>
               </div>
@@ -163,7 +163,7 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
 
             <div className="relative">
               <div className="flex justify-between items-center mb-2">
-                <Label className="text-white">Vaša 24-riječi Seed Fraza</Label>
+                <Label className="text-white">Your 24-Word Seed Phrase</Label>
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
@@ -199,7 +199,7 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
                     onClick={() => setShowSeed(true)}
                     className="border-crypto-gold text-crypto-gold hover:bg-crypto-gold/10"
                   >
-                    <Eye className="w-4 h-4 mr-2" /> Prikaži Seed Frazu
+                    <Eye className="w-4 h-4 mr-2" /> Show Seed Phrase
                   </Button>
                 </div>
               )}
@@ -213,8 +213,8 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
                 className="border-crypto-gold data-[state=checked]:bg-crypto-gold"
               />
               <Label htmlFor="confirm" className="text-sm text-crypto-muted cursor-pointer">
-                Razumijem da ako izgubim ovu seed frazu, zauvijek ću izgubiti pristup svojim WALKCOINS.
-                Sačuvao/la sam je na sigurnom mjestu.
+                I understand that if I lose this seed phrase, I will permanently lose access to my WALKCOINS.
+                I have saved it in a safe place.
               </Label>
             </div>
 
@@ -223,7 +223,7 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
               disabled={!confirmed}
               className="w-full bg-crypto-gold hover:bg-crypto-gold/90 text-black font-bold"
             >
-              Nastavi na Verifikaciju
+              Continue to Verification
             </Button>
           </div>
         )}
@@ -231,15 +231,15 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
         {step === 'verify' && (
           <div className="space-y-4 pt-4">
             <p className="text-crypto-muted text-sm">
-              Unesite tražene riječi iz vaše seed fraze da potvrdite da ste je sačuvali.
+              Enter the requested words from your seed phrase to confirm you have saved it.
             </p>
 
             <div className="space-y-3">
               {verifyWords.map((vw, i) => (
                 <div key={i} className="space-y-1">
-                  <Label className="text-white">Riječ #{vw.index + 1}</Label>
+                  <Label className="text-white">Word #{vw.index + 1}</Label>
                   <Input
-                    placeholder={`Unesite riječ #${vw.index + 1}`}
+                    placeholder={`Enter word #${vw.index + 1}`}
                     value={verifyInputs[i]}
                     onChange={(e) => {
                       const newInputs = [...verifyInputs];
@@ -257,7 +257,7 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
               disabled={verifyInputs.some(v => !v.trim())}
               className="w-full bg-crypto-gold hover:bg-crypto-gold/90 text-black font-bold"
             >
-              Potvrdi
+              Confirm
             </Button>
           </div>
         )}
@@ -268,16 +268,16 @@ const CreateWalletModal: React.FC<CreateWalletModalProps> = ({ isOpen, onClose, 
               <Check className="w-8 h-8 text-green-500" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">Wallet Uspješno Kreiran!</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Wallet Successfully Created!</h3>
               <p className="text-crypto-muted">
-                Vaš WALKCOINS wallet je spreman. Sada možete primati i slati WALK coins.
+                Your WALKCOINS wallet is ready. You can now receive and send WALK coins.
               </p>
             </div>
             <Button 
               onClick={handleComplete}
               className="w-full bg-crypto-gold hover:bg-crypto-gold/90 text-black font-bold"
             >
-              Završi
+              Finish
             </Button>
           </div>
         )}

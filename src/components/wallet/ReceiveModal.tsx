@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download, Copy, Check, QrCode, Share2 } from 'lucide-react';
+import { Download, Copy, Check, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ReceiveModalProps {
@@ -29,15 +29,15 @@ const ReceiveModal: React.FC<ReceiveModalProps> = ({
     await navigator.clipboard.writeText(walletAddress);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success('Adresa kopirana!');
+    toast.success('Address copied!');
   };
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'WALKCOINS Adresa',
-          text: `Moja WALKCOINS adresa: ${walletAddress}`,
+          title: 'WALKCOINS Address',
+          text: `My WALKCOINS address: ${walletAddress}`,
         });
       } catch (err) {
         // User cancelled or error
@@ -82,10 +82,10 @@ const ReceiveModal: React.FC<ReceiveModalProps> = ({
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <Download className="w-5 h-5 text-crypto-green" />
-            Primi WALK Coins
+            Receive WALK Coins
           </DialogTitle>
           <DialogDescription className="text-crypto-muted">
-            Podijelite svoju adresu da primite WALKCOINS
+            Share your address to receive WALKCOINS
           </DialogDescription>
         </DialogHeader>
 
@@ -114,7 +114,7 @@ const ReceiveModal: React.FC<ReceiveModalProps> = ({
 
           {/* Address */}
           <div className="bg-crypto-dark/50 rounded-lg p-4">
-            <p className="text-crypto-muted text-xs mb-2 text-center">Vaša WALKCOINS Adresa</p>
+            <p className="text-crypto-muted text-xs mb-2 text-center">Your WALKCOINS Address</p>
             <p className="text-white font-mono text-sm text-center break-all leading-relaxed">
               {walletAddress}
             </p>
@@ -129,12 +129,12 @@ const ReceiveModal: React.FC<ReceiveModalProps> = ({
               {copied ? (
                 <>
                   <Check className="w-4 h-4 mr-2" />
-                  Kopirano
+                  Copied
                 </>
               ) : (
                 <>
                   <Copy className="w-4 h-4 mr-2" />
-                  Kopiraj
+                  Copy
                 </>
               )}
             </Button>
@@ -144,13 +144,13 @@ const ReceiveModal: React.FC<ReceiveModalProps> = ({
               className="flex-1 border-crypto-border text-white hover:bg-crypto-gold/10"
             >
               <Share2 className="w-4 h-4 mr-2" />
-              Podijeli
+              Share
             </Button>
           </div>
 
           {/* Info */}
           <p className="text-crypto-muted text-xs text-center">
-            Šaljite samo WALKCOINS na ovu adresu. Slanje drugih kriptovaluta može rezultirati gubitkom sredstava.
+            Only send WALKCOINS to this address. Sending other cryptocurrencies may result in loss of funds.
           </p>
         </div>
       </DialogContent>

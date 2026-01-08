@@ -98,7 +98,7 @@ const Leaderboard: React.FC = () => {
               className="flex-1 data-[state=active]:bg-crypto-green/20 data-[state=active]:text-crypto-green"
             >
               <TrendingUp className="w-4 h-4 mr-2" />
-              Kilometri
+              Kilometers
             </TabsTrigger>
           </TabsList>
 
@@ -106,7 +106,7 @@ const Leaderboard: React.FC = () => {
           {currentUserRank > 0 && (
             <div className="mb-4 p-3 rounded-lg bg-crypto-purple/10 border border-crypto-purple/30">
               <p className="text-sm text-crypto-purple">
-                🎯 Tvoja pozicija: <span className="font-bold">#{currentUserRank}</span>
+                🎯 Your position: <span className="font-bold">#{currentUserRank}</span>
               </p>
             </div>
           )}
@@ -134,7 +134,7 @@ const Leaderboard: React.FC = () => {
                         </div>
                         <div>
                           <p className={`text-sm font-medium ${u.id === user?.id ? 'text-crypto-purple' : 'text-white'}`}>
-                            {u.id === user?.id ? 'Ti' : maskEmail(u.email)}
+                            {u.id === user?.id ? 'You' : maskEmail(u.email)}
                           </p>
                           <p className="text-xs text-crypto-muted">Level {u.current_level}</p>
                         </div>
@@ -166,7 +166,7 @@ const Leaderboard: React.FC = () => {
                       </div>
                       <div>
                         <p className={`text-sm font-medium ${u.id === user?.id ? 'text-crypto-purple' : 'text-white'}`}>
-                          {u.id === user?.id ? 'Ti' : maskEmail(u.email)}
+                          {u.id === user?.id ? 'You' : maskEmail(u.email)}
                         </p>
                         <p className="text-xs text-crypto-muted">Level {u.current_level}</p>
                       </div>

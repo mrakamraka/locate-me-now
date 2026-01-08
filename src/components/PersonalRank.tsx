@@ -11,12 +11,12 @@ interface PersonalRankProps {
 
 // Define rank tiers based on total distance walked
 const RANK_TIERS = [
-  { name: 'Početnik', icon: Star, minKm: 0, maxKm: 5, color: 'text-gray-400', bgColor: 'bg-gray-500/10', borderColor: 'border-gray-500/30' },
-  { name: 'Šetač', icon: Target, minKm: 5, maxKm: 25, color: 'text-crypto-blue', bgColor: 'bg-crypto-blue/10', borderColor: 'border-crypto-blue/30' },
-  { name: 'Trkač', icon: Zap, minKm: 25, maxKm: 100, color: 'text-crypto-green', bgColor: 'bg-crypto-green/10', borderColor: 'border-crypto-green/30' },
-  { name: 'Maratonac', icon: Medal, minKm: 100, maxKm: 500, color: 'text-crypto-purple', bgColor: 'bg-crypto-purple/10', borderColor: 'border-crypto-purple/30' },
+  { name: 'Beginner', icon: Star, minKm: 0, maxKm: 5, color: 'text-gray-400', bgColor: 'bg-gray-500/10', borderColor: 'border-gray-500/30' },
+  { name: 'Walker', icon: Target, minKm: 5, maxKm: 25, color: 'text-crypto-blue', bgColor: 'bg-crypto-blue/10', borderColor: 'border-crypto-blue/30' },
+  { name: 'Runner', icon: Zap, minKm: 25, maxKm: 100, color: 'text-crypto-green', bgColor: 'bg-crypto-green/10', borderColor: 'border-crypto-green/30' },
+  { name: 'Marathoner', icon: Medal, minKm: 100, maxKm: 500, color: 'text-crypto-purple', bgColor: 'bg-crypto-purple/10', borderColor: 'border-crypto-purple/30' },
   { name: 'Ultra', icon: Flame, minKm: 500, maxKm: 1000, color: 'text-orange-400', bgColor: 'bg-orange-500/10', borderColor: 'border-orange-500/30' },
-  { name: 'Legenda', icon: Crown, minKm: 1000, maxKm: 5000, color: 'text-crypto-gold', bgColor: 'bg-crypto-gold/10', borderColor: 'border-crypto-gold/30' },
+  { name: 'Legend', icon: Crown, minKm: 1000, maxKm: 5000, color: 'text-crypto-gold', bgColor: 'bg-crypto-gold/10', borderColor: 'border-crypto-gold/30' },
   { name: 'Titan', icon: Trophy, minKm: 5000, maxKm: Infinity, color: 'text-red-400', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/30' },
 ];
 
@@ -46,7 +46,7 @@ const PersonalRank: React.FC<PersonalRankProps> = ({
 
   // Stats for display
   const stats = [
-    { label: 'Ukupno km', value: totalDistance.toFixed(1), icon: TrendingUp },
+    { label: 'Total km', value: totalDistance.toFixed(1), icon: TrendingUp },
     { label: 'WALK Coins', value: totalCoins.toLocaleString(), icon: Award },
     { label: 'Level', value: currentLevel.toString(), icon: Star },
   ];
@@ -115,7 +115,7 @@ const PersonalRank: React.FC<PersonalRankProps> = ({
               />
             </div>
             <p className="text-crypto-muted text-xs text-center">
-              Još <span className="text-crypto-gold font-bold">{kmToNextRank.toFixed(1)} km</span> do sljedećeg ranka
+              <span className="text-crypto-gold font-bold">{kmToNextRank.toFixed(1)} km</span> to next rank
             </p>
           </div>
         )}
@@ -124,14 +124,14 @@ const PersonalRank: React.FC<PersonalRankProps> = ({
         {!nextRank && (
           <div className="text-center p-4 rounded-xl bg-gradient-to-r from-crypto-gold/10 via-crypto-purple/10 to-crypto-gold/10 border border-crypto-gold/30">
             <Crown className="w-8 h-8 text-crypto-gold mx-auto mb-2" />
-            <p className="text-crypto-gold font-bold">Maksimalni Rang!</p>
-            <p className="text-crypto-muted text-sm">Ti si legenda među šetačima 🏆</p>
+            <p className="text-crypto-gold font-bold">Maximum Rank!</p>
+            <p className="text-crypto-muted text-sm">You are a legend among walkers 🏆</p>
           </div>
         )}
 
         {/* Rank Badges Preview */}
         <div className="pt-2">
-          <p className="text-crypto-muted text-xs mb-2 text-center">Svi Rangovi</p>
+          <p className="text-crypto-muted text-xs mb-2 text-center">All Ranks</p>
           <div className="flex justify-center gap-2 flex-wrap">
             {RANK_TIERS.map((tier, index) => {
               const TierIcon = tier.icon;
