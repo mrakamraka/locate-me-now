@@ -55,7 +55,7 @@ interface WalletCardProps {
   onImportWallet: (mnemonic: string, name?: string) => Promise<any>;
   onSetActiveWallet: (walletId: string) => Promise<void>;
   onDeleteWallet: (walletId: string) => Promise<boolean>;
-  onRemoveWallet: (walletId: string) => void;
+  onRemoveWallet: (walletId: string) => Promise<boolean>;
   onRenameWallet: (walletId: string, newName: string) => Promise<boolean>;
   verifyMnemonic: (mnemonic: string) => boolean;
   deriveAddressFromMnemonic: (mnemonic: string) => string | null;
@@ -275,16 +275,18 @@ const WalletCard: React.FC<WalletCardProps> = ({
                   Verifikuj Backup
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     if (activeWallet) {
-                      onRemoveWallet(activeWallet.id);
-                      toast.success('Wallet uklonjen iz prikaza. Možeš ga ponovo uvesti.');
+                      const success = await onRemoveWallet(activeWallet.id);
+                      if (success) {
+                        toast.success('Wallet uklonjen! Možeš ga ponovo uvesti sa istom seed frazom.');
+                      }
                     }
                   }}
                   className="text-orange-400 hover:bg-orange-500/10 cursor-pointer"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  Ukloni (za test)
+                  Ukloni Wallet
                 </DropdownMenuItem>
                 {wallets.length > 1 && (
                   <DropdownMenuItem
