@@ -63,23 +63,23 @@ const SendModal: React.FC<SendModalProps> = ({
 
   const handleProceed = () => {
     if (!addressStatus?.valid || !addressStatus?.exists) {
-      toast.error('Nevažeća adresa');
+      toast.error('Invalid address');
       return;
     }
 
     const numAmount = parseInt(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
-      toast.error('Unesite ispravan iznos');
+      toast.error('Enter a valid amount');
       return;
     }
 
     if (numAmount > currentBalance) {
-      toast.error('Nedovoljno sredstava');
+      toast.error('Insufficient funds');
       return;
     }
 
     if (toAddress.toLowerCase() === walletAddress.toLowerCase()) {
-      toast.error('Ne možete slati sebi');
+      toast.error('Cannot send to yourself');
       return;
     }
 
@@ -95,7 +95,7 @@ const SendModal: React.FC<SendModalProps> = ({
       setTxHash(result.txHash || '');
       setStep('success');
     } else {
-      toast.error(result.error || 'Greška pri slanju');
+      toast.error(result.error || 'Error sending');
     }
   };
 
@@ -117,14 +117,14 @@ const SendModal: React.FC<SendModalProps> = ({
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <Send className="w-5 h-5 text-crypto-gold" />
-            {step === 'form' && 'Pošalji WALK Coins'}
-            {step === 'confirm' && 'Potvrdi Transakciju'}
-            {step === 'success' && 'Transakcija Uspješna!'}
+            {step === 'form' && 'Send WALK Coins'}
+            {step === 'confirm' && 'Confirm Transaction'}
+            {step === 'success' && 'Transaction Successful!'}
           </DialogTitle>
           <DialogDescription className="text-crypto-muted">
-            {step === 'form' && 'Pošaljite WALK coins na drugu adresu'}
-            {step === 'confirm' && 'Provjerite detalje prije slanja'}
-            {step === 'success' && 'Vaši WALK coins su uspješno poslani'}
+            {step === 'form' && 'Send WALK coins to another address'}
+            {step === 'confirm' && 'Review details before sending'}
+            {step === 'success' && 'Your WALK coins have been sent successfully'}
           </DialogDescription>
         </DialogHeader>
 
@@ -132,7 +132,7 @@ const SendModal: React.FC<SendModalProps> = ({
           <div className="space-y-4 pt-4">
             {/* Balance */}
             <div className="bg-crypto-dark/50 rounded-lg p-3 flex items-center justify-between">
-              <span className="text-crypto-muted text-sm">Dostupno</span>
+              <span className="text-crypto-muted text-sm">Available</span>
               <span className="text-white font-bold flex items-center gap-1">
                 <Coins className="w-4 h-4 text-crypto-gold" />
                 {currentBalance.toLocaleString()} WALK
@@ -141,7 +141,7 @@ const SendModal: React.FC<SendModalProps> = ({
 
             {/* Recipient Address */}
             <div className="space-y-2">
-              <Label className="text-white">Adresa Primatelja</Label>
+              <Label className="text-white">Recipient Address</Label>
               <div className="relative">
                 <Input
                   placeholder="0x..."
@@ -166,16 +166,16 @@ const SendModal: React.FC<SendModalProps> = ({
                 </div>
               </div>
               {addressStatus && !addressStatus.valid && (
-                <p className="text-red-500 text-xs">Nevažeća adresa</p>
+                <p className="text-red-500 text-xs">Invalid address</p>
               )}
               {addressStatus && addressStatus.valid && !addressStatus.exists && (
-                <p className="text-red-500 text-xs">Adresa ne postoji u WALKCOINS mreži</p>
+                <p className="text-red-500 text-xs">Address does not exist in WALKCOINS network</p>
               )}
             </div>
 
             {/* Amount */}
             <div className="space-y-2">
-              <Label className="text-white">Iznos</Label>
+              <Label className="text-white">Amount</Label>
               <div className="relative">
                 <Input
                   type="text"
@@ -198,15 +198,15 @@ const SendModal: React.FC<SendModalProps> = ({
                 </div>
               </div>
               {numAmount > currentBalance && (
-                <p className="text-red-500 text-xs">Nedovoljno sredstava</p>
+                <p className="text-red-500 text-xs">Insufficient funds</p>
               )}
             </div>
 
             {/* Note */}
             <div className="space-y-2">
-              <Label className="text-white">Napomena (opcionalno)</Label>
+              <Label className="text-white">Note (optional)</Label>
               <Textarea
-                placeholder="Npr. Za kavu ☕"
+                placeholder="e.g. For coffee ☕"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 className="bg-crypto-dark border-crypto-border text-white h-20 resize-none"
@@ -219,7 +219,7 @@ const SendModal: React.FC<SendModalProps> = ({
               disabled={!addressStatus?.exists || numAmount <= 0 || numAmount > currentBalance}
               className="w-full bg-crypto-gold hover:bg-crypto-gold/90 text-black font-bold"
             >
-              Nastavi
+              Continue
             </Button>
           </div>
         )}
@@ -228,27 +228,27 @@ const SendModal: React.FC<SendModalProps> = ({
           <div className="space-y-4 pt-4">
             <div className="bg-crypto-dark/50 rounded-lg p-4 space-y-3">
               <div className="flex justify-between">
-                <span className="text-crypto-muted">Primatelj</span>
+                <span className="text-crypto-muted">Recipient</span>
                 <span className="text-white font-mono text-sm">
                   {toAddress.slice(0, 10)}...{toAddress.slice(-8)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-crypto-muted">Iznos</span>
+                <span className="text-crypto-muted">Amount</span>
                 <span className="text-white font-bold">{numAmount.toLocaleString()} WALK</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-crypto-muted">Naknada</span>
+                <span className="text-crypto-muted">Fee</span>
                 <span className="text-green-500">0 WALK</span>
               </div>
               {note && (
                 <div className="flex justify-between">
-                  <span className="text-crypto-muted">Napomena</span>
+                  <span className="text-crypto-muted">Note</span>
                   <span className="text-white text-sm">{note}</span>
                 </div>
               )}
               <div className="border-t border-crypto-border pt-3 flex justify-between">
-                <span className="text-crypto-muted font-semibold">Ukupno</span>
+                <span className="text-crypto-muted font-semibold">Total</span>
                 <span className="text-crypto-gold font-bold text-lg">{numAmount.toLocaleString()} WALK</span>
               </div>
             </div>
@@ -259,7 +259,7 @@ const SendModal: React.FC<SendModalProps> = ({
                 onClick={() => setStep('form')}
                 className="flex-1 border-crypto-border"
               >
-                Natrag
+                Back
               </Button>
               <Button
                 onClick={handleSend}
@@ -269,12 +269,12 @@ const SendModal: React.FC<SendModalProps> = ({
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Slanje...
+                    Sending...
                   </>
                 ) : (
                   <>
                     <Send className="w-4 h-4 mr-2" />
-                    Pošalji
+                    Send
                   </>
                 )}
               </Button>
@@ -288,12 +288,12 @@ const SendModal: React.FC<SendModalProps> = ({
               <Check className="w-8 h-8 text-green-500" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">Uspješno Poslano!</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Successfully Sent!</h3>
               <p className="text-crypto-gold font-bold text-2xl mb-2">
                 {numAmount.toLocaleString()} WALK
               </p>
               <p className="text-crypto-muted text-sm">
-                Poslano na {toAddress.slice(0, 10)}...{toAddress.slice(-8)}
+                Sent to {toAddress.slice(0, 10)}...{toAddress.slice(-8)}
               </p>
             </div>
             {txHash && (
@@ -308,7 +308,7 @@ const SendModal: React.FC<SendModalProps> = ({
               onClick={handleClose}
               className="w-full bg-crypto-gold hover:bg-crypto-gold/90 text-black font-bold"
             >
-              Završi
+              Done
             </Button>
           </div>
         )}

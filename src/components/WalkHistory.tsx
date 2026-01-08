@@ -2,8 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Footprints, Coins, Calendar, TrendingUp, Clock, MapPin } from 'lucide-react';
-import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
-import { hr } from 'date-fns/locale';
+import { format, isToday, isYesterday } from 'date-fns';
+import { enUS } from 'date-fns/locale';
 
 interface WalkSession {
   id: string;
@@ -53,9 +53,9 @@ const WalkHistory: React.FC<WalkHistoryProps> = ({ transactions }) => {
 
   const formatDateHeader = (dateKey: string) => {
     const date = new Date(dateKey);
-    if (isToday(date)) return 'Danas';
-    if (isYesterday(date)) return 'Jučer';
-    return format(date, 'd. MMMM', { locale: hr });
+    if (isToday(date)) return 'Today';
+    if (isYesterday(date)) return 'Yesterday';
+    return format(date, 'MMMM d', { locale: enUS });
   };
 
   const getDailyTotal = (sessions: WalkSession[]) => {
@@ -78,7 +78,7 @@ const WalkHistory: React.FC<WalkHistoryProps> = ({ transactions }) => {
             <div className="p-2 rounded-lg bg-crypto-green/10 border border-crypto-green/30">
               <Footprints className="w-4 h-4 text-crypto-green" />
             </div>
-            WALK Historija
+            WALK History
           </CardTitle>
           <div className="flex items-center gap-1 text-crypto-green text-sm">
             <TrendingUp className="w-4 h-4" />
@@ -93,17 +93,17 @@ const WalkHistory: React.FC<WalkHistoryProps> = ({ transactions }) => {
           <div className="text-center p-2 rounded-lg bg-crypto-dark/50 border border-crypto-border">
             <MapPin className="w-3.5 h-3.5 text-crypto-blue mx-auto mb-1" />
             <p className="text-white font-bold text-sm">{totalDistance.toFixed(1)}</p>
-            <p className="text-crypto-muted text-xs">km ukupno</p>
+            <p className="text-crypto-muted text-xs">km total</p>
           </div>
           <div className="text-center p-2 rounded-lg bg-crypto-dark/50 border border-crypto-border">
             <Coins className="w-3.5 h-3.5 text-crypto-gold mx-auto mb-1" />
             <p className="text-white font-bold text-sm">{totalCoins.toLocaleString()}</p>
-            <p className="text-crypto-muted text-xs">coina</p>
+            <p className="text-crypto-muted text-xs">coins</p>
           </div>
           <div className="text-center p-2 rounded-lg bg-crypto-dark/50 border border-crypto-border">
             <TrendingUp className="w-3.5 h-3.5 text-crypto-purple mx-auto mb-1" />
             <p className="text-white font-bold text-sm">{avgDistance.toFixed(2)}</p>
-            <p className="text-crypto-muted text-xs">km/sesija</p>
+            <p className="text-crypto-muted text-xs">km/session</p>
           </div>
         </div>
 
@@ -145,7 +145,7 @@ const WalkHistory: React.FC<WalkHistoryProps> = ({ transactions }) => {
                               </p>
                               <div className="flex items-center gap-1 text-crypto-muted text-xs">
                                 <Clock className="w-3 h-3" />
-                                {format(new Date(session.date), 'HH:mm', { locale: hr })}
+                                {format(new Date(session.date), 'HH:mm', { locale: enUS })}
                               </div>
                             </div>
                           </div>
@@ -165,9 +165,9 @@ const WalkHistory: React.FC<WalkHistoryProps> = ({ transactions }) => {
           ) : (
             <div className="flex flex-col items-center justify-center h-full py-8 text-center">
               <Footprints className="w-12 h-12 text-crypto-muted/30 mb-3" />
-              <p className="text-crypto-muted text-sm">Nema šetnji još</p>
+              <p className="text-crypto-muted text-sm">No walks yet</p>
               <p className="text-crypto-muted/60 text-xs mt-1">
-                Pokreni praćenje i počni zarađivati!
+                Start tracking and begin earning!
               </p>
             </div>
           )}

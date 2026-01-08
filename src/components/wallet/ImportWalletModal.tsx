@@ -42,20 +42,20 @@ const ImportWalletModal: React.FC<ImportWalletModalProps> = ({
 
   const handleImport = async () => {
     if (!verifyMnemonic(mnemonic)) {
-      toast.error('Nevažeća seed fraza');
+      toast.error('Invalid seed phrase');
       return;
     }
 
     setLoading(true);
     try {
       await onImport(mnemonic, walletName || undefined);
-      toast.success('Wallet uspješno uvezen!');
+      toast.success('Wallet successfully imported!');
       handleClose();
     } catch (error: any) {
       if (error.message === 'Wallet already exists') {
-        toast.error('Ovaj wallet već postoji');
+        toast.error('This wallet already exists');
       } else {
-        toast.error('Greška pri uvozu walleta');
+        toast.error('Error importing wallet');
       }
     } finally {
       setLoading(false);
@@ -77,10 +77,10 @@ const ImportWalletModal: React.FC<ImportWalletModalProps> = ({
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <Download className="w-5 h-5 text-crypto-purple" />
-            Uvezi Postojeći Wallet
+            Import Existing Wallet
           </DialogTitle>
           <DialogDescription className="text-crypto-muted">
-            Unesite vašu 24-riječi seed frazu da uvezete postojeći WALKCOINS wallet
+            Enter your 24-word seed phrase to import an existing WALKCOINS wallet
           </DialogDescription>
         </DialogHeader>
 
@@ -89,19 +89,19 @@ const ImportWalletModal: React.FC<ImportWalletModalProps> = ({
             <div className="flex gap-3">
               <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />
               <div className="text-sm text-amber-200">
-                <p className="font-semibold mb-1">Sigurnosno Upozorenje</p>
+                <p className="font-semibold mb-1">Security Warning</p>
                 <p className="text-amber-300/80">
-                  Nikada ne dijelite svoju seed frazu s drugima. 
-                  WALKCOINS nikada neće tražiti vašu seed frazu putem emaila ili poruka.
+                  Never share your seed phrase with others. 
+                  WALKCOINS will never ask for your seed phrase via email or messages.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white">Ime Walleta (opcionalno)</Label>
+            <Label className="text-white">Wallet Name (optional)</Label>
             <Input
-              placeholder="Npr. Uvezeni Wallet"
+              placeholder="e.g. Imported Wallet"
               value={walletName}
               onChange={(e) => setWalletName(e.target.value)}
               className="bg-crypto-dark border-crypto-border text-white"
@@ -110,13 +110,13 @@ const ImportWalletModal: React.FC<ImportWalletModalProps> = ({
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <Label className="text-white">24-Riječi Seed Fraza</Label>
+              <Label className="text-white">24-Word Seed Phrase</Label>
               <span className={`text-xs ${wordCount === 24 ? 'text-green-500' : 'text-crypto-muted'}`}>
-                {wordCount}/24 riječi
+                {wordCount}/24 words
               </span>
             </div>
             <Textarea
-              placeholder="Unesite vašu seed frazu (24 riječi odvojene razmacima)..."
+              placeholder="Enter your seed phrase (24 words separated by spaces)..."
               value={mnemonic}
               onChange={(e) => handleMnemonicChange(e.target.value)}
               className={`bg-crypto-dark border-crypto-border text-white font-mono h-32 resize-none ${
@@ -125,12 +125,12 @@ const ImportWalletModal: React.FC<ImportWalletModalProps> = ({
             />
             {isValid === true && (
               <p className="text-green-500 text-sm flex items-center gap-1">
-                <Check className="w-4 h-4" /> Seed fraza je važeća
+                <Check className="w-4 h-4" /> Seed phrase is valid
               </p>
             )}
             {isValid === false && (
               <p className="text-red-500 text-sm">
-                Nevažeća seed fraza. Provjerite da li ste unijeli sve riječi ispravno.
+                Invalid seed phrase. Please check that all words are entered correctly.
               </p>
             )}
           </div>
@@ -141,7 +141,7 @@ const ImportWalletModal: React.FC<ImportWalletModalProps> = ({
               onClick={handleClose}
               className="flex-1 border-crypto-border text-crypto-muted hover:text-white"
             >
-              Odustani
+              Cancel
             </Button>
             <Button 
               onClick={handleImport} 
@@ -151,10 +151,10 @@ const ImportWalletModal: React.FC<ImportWalletModalProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Uvoz...
+                  Importing...
                 </>
               ) : (
-                'Uvezi Wallet'
+                'Import Wallet'
               )}
             </Button>
           </div>

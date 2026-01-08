@@ -9,8 +9,8 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 const authSchema = z.object({
-  email: z.string().email({ message: "Email nije validan" }),
-  password: z.string().min(6, { message: "Lozinka mora imati minimalno 6 karaktera" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
 const Auth: React.FC = () => {
@@ -68,7 +68,7 @@ const Auth: React.FC = () => {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success('Dobrodošli natrag!');
+        toast.success('Welcome back!');
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -79,15 +79,15 @@ const Auth: React.FC = () => {
           },
         });
         if (error) throw error;
-        toast.success('Račun kreiran! Možete se prijaviti.');
+        toast.success('Account created! You can now sign in.');
       }
     } catch (error: any) {
       if (error.message?.includes('User already registered')) {
-        toast.error('Korisnik s ovim emailom već postoji');
+        toast.error('A user with this email already exists');
       } else if (error.message?.includes('Invalid login credentials')) {
-        toast.error('Pogrešan email ili lozinka');
+        toast.error('Incorrect email or password');
       } else {
-        toast.error(error.message || 'Greška pri autentifikaciji');
+        toast.error(error.message || 'Authentication error');
       }
     } finally {
       setLoading(false);
@@ -113,7 +113,7 @@ const Auth: React.FC = () => {
           <h1 className="text-4xl font-bold text-white mb-2">
             WALK<span className="text-crypto-gold">COIN</span>
           </h1>
-          <p className="text-crypto-muted">Hodaj. Zarađuj. Rastu tvoji coini.</p>
+          <p className="text-crypto-muted">Walk. Earn. Grow your coins.</p>
         </div>
 
         {/* Stats preview */}
@@ -121,17 +121,17 @@ const Auth: React.FC = () => {
           <div className="text-center p-4 rounded-xl bg-crypto-card/50 border border-crypto-border">
             <TrendingUp className="w-6 h-6 text-crypto-green mx-auto mb-2" />
             <p className="text-sm text-crypto-muted">100 WALK</p>
-            <p className="text-xs text-crypto-muted/60">po kilometru</p>
+            <p className="text-xs text-crypto-muted/60">per kilometer</p>
           </div>
           <div className="text-center p-4 rounded-xl bg-crypto-card/50 border border-crypto-border">
             <Sparkles className="w-6 h-6 text-crypto-gold mx-auto mb-2" />
             <p className="text-sm text-crypto-muted">Level Up</p>
-            <p className="text-xs text-crypto-muted/60">svaki km</p>
+            <p className="text-xs text-crypto-muted/60">every km</p>
           </div>
           <div className="text-center p-4 rounded-xl bg-crypto-card/50 border border-crypto-border">
             <Users className="w-6 h-6 text-crypto-purple mx-auto mb-2" />
             <p className="text-sm text-crypto-muted">+100 WALK</p>
-            <p className="text-xs text-crypto-muted/60">po referalu</p>
+            <p className="text-xs text-crypto-muted/60">per referral</p>
           </div>
         </div>
 
@@ -139,10 +139,10 @@ const Auth: React.FC = () => {
         <Card className="w-full max-w-md bg-crypto-card/80 backdrop-blur-xl border-crypto-border">
           <CardHeader className="text-center pb-2">
             <h2 className="text-2xl font-bold text-white">
-              {isLogin ? 'Prijavi se' : 'Kreiraj račun'}
+              {isLogin ? 'Sign In' : 'Create Account'}
             </h2>
             <p className="text-crypto-muted text-sm">
-              {isLogin ? 'Nastavi skupljati WALK Coins' : 'Započni svoju crypto fitness avanturu'}
+              {isLogin ? 'Continue collecting WALK Coins' : 'Start your crypto fitness adventure'}
             </p>
           </CardHeader>
           <CardContent>
@@ -152,7 +152,7 @@ const Auth: React.FC = () => {
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-crypto-muted" />
                   <Input
                     type="email"
-                    placeholder="Email adresa"
+                    placeholder="Email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 bg-crypto-dark border-crypto-border text-white placeholder:text-crypto-muted/50 focus:border-crypto-gold focus:ring-crypto-gold/20"
@@ -169,7 +169,7 @@ const Auth: React.FC = () => {
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-crypto-muted" />
                   <Input
                     type="password"
-                    placeholder="Lozinka"
+                    placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 bg-crypto-dark border-crypto-border text-white placeholder:text-crypto-muted/50 focus:border-crypto-gold focus:ring-crypto-gold/20"
@@ -187,14 +187,14 @@ const Auth: React.FC = () => {
                     <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-crypto-muted" />
                     <Input
                       type="text"
-                      placeholder="Referral kod (opcionalno)"
+                      placeholder="Referral code (optional)"
                       value={referralCode}
                       onChange={(e) => setReferralCode(e.target.value)}
                       className="pl-10 bg-crypto-dark border-crypto-border text-white placeholder:text-crypto-muted/50 focus:border-crypto-purple focus:ring-crypto-purple/20"
                     />
                   </div>
                   <p className="text-xs text-crypto-muted/60">
-                    Imaš referral kod? Unesi ga za bonus!
+                    Have a referral code? Enter it for a bonus!
                   </p>
                 </div>
               )}
@@ -207,17 +207,17 @@ const Auth: React.FC = () => {
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <span className="w-5 h-5 border-2 border-crypto-dark/30 border-t-crypto-dark rounded-full animate-spin" />
-                    Učitavanje...
+                    Loading...
                   </span>
                 ) : isLogin ? (
                   <span className="flex items-center gap-2">
                     <LogIn className="w-5 h-5" />
-                    Prijavi se
+                    Sign In
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
                     <UserPlus className="w-5 h-5" />
-                    Kreiraj račun
+                    Create Account
                   </span>
                 )}
               </Button>
@@ -230,9 +230,9 @@ const Auth: React.FC = () => {
                 className="text-crypto-muted hover:text-crypto-gold transition-colors text-sm"
               >
                 {isLogin ? (
-                  <>Nemaš račun? <span className="text-crypto-gold font-medium">Registriraj se</span></>
+                  <>Don't have an account? <span className="text-crypto-gold font-medium">Sign Up</span></>
                 ) : (
-                  <>Već imaš račun? <span className="text-crypto-gold font-medium">Prijavi se</span></>
+                  <>Already have an account? <span className="text-crypto-gold font-medium">Sign In</span></>
                 )}
               </button>
             </div>
@@ -241,7 +241,7 @@ const Auth: React.FC = () => {
 
         {/* Footer */}
         <p className="mt-8 text-crypto-muted/50 text-xs text-center">
-          Hodaj više, zarađuj više. Svaki korak se isplati! 🚀
+          Walk more, earn more. Every step pays off! 🚀
         </p>
       </div>
     </div>

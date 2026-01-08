@@ -23,10 +23,10 @@ const ReferralCard: React.FC<ReferralCardProps> = ({ profile }) => {
     try {
       await navigator.clipboard.writeText(referralLink);
       setCopied(true);
-      toast.success('Link kopiran!');
+      toast.success('Link copied!');
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error('Greška pri kopiranju');
+      toast.error('Copy failed');
     }
   };
 
@@ -36,8 +36,8 @@ const ReferralCard: React.FC<ReferralCardProps> = ({ profile }) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'WALKCOIN - Hodaj i zarađuj!',
-          text: `Pridruži mi se na WALKCOIN! Hodaj i zarađuj crypto. Koristi moj kod: ${profile.referral_code}`,
+          title: 'WALKCOIN - Walk and Earn!',
+          text: `Join me on WALKCOIN! Walk and earn crypto. Use my code: ${profile.referral_code}`,
           url: referralLink,
         });
       } catch (err) {
@@ -59,27 +59,27 @@ const ReferralCard: React.FC<ReferralCardProps> = ({ profile }) => {
       <CardContent className="space-y-4">
         <div className="p-4 rounded-xl bg-crypto-dark/50 border border-crypto-border">
           <p className="text-sm text-crypto-muted mb-3">
-            Pozovi prijatelje i zarađuj <span className="text-crypto-gold font-bold">+100 WALK</span> po kilometru za svakog!
+            Invite friends and earn <span className="text-crypto-gold font-bold">+100 WALK</span> per kilometer for each!
           </p>
           
           <div className="flex items-center gap-2 mb-3">
             <Users className="w-5 h-5 text-crypto-purple" />
             <span className="text-white font-medium">
-              {profile?.referral_count || 0} aktivnih referala
+              {profile?.referral_count || 0} active referrals
             </span>
           </div>
 
           {profile?.referral_count && profile.referral_count > 0 ? (
             <div className="p-3 rounded-lg bg-crypto-green/10 border border-crypto-green/30">
               <p className="text-sm text-crypto-green">
-                🎉 Dobivate +{(profile.referral_count * 100).toLocaleString()} bonus WALK po kilometru!
+                🎉 You earn +{(profile.referral_count * 100).toLocaleString()} bonus WALK per kilometer!
               </p>
             </div>
           ) : null}
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs text-crypto-muted">Tvoj referral kod:</p>
+          <p className="text-xs text-crypto-muted">Your referral code:</p>
           <div className="flex gap-2">
             <Input
               value={profile?.referral_code || '...'}
@@ -106,7 +106,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({ profile }) => {
           className="w-full bg-gradient-to-r from-crypto-purple to-crypto-purple/80 hover:from-crypto-purple/90 hover:to-crypto-purple/70"
         >
           <Share2 className="w-4 h-4 mr-2" />
-          Podijeli s prijateljima
+          Share with friends
         </Button>
       </CardContent>
     </Card>
