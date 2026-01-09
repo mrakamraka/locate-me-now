@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Coins, TrendingUp, Users, Award, Footprints } from 'lucide-react';
+import { Coins, TrendingUp, Users, Award, Footprints, Signal, SignalLow, SignalMedium, SignalHigh } from 'lucide-react';
 import { Profile } from '@/hooks/useWalkCoins';
 
 interface CryptoStatsProps {
@@ -8,9 +8,10 @@ interface CryptoStatsProps {
   loading: boolean;
   sessionSteps?: number;
   isTracking?: boolean;
+  stepAccuracy?: 'high' | 'medium' | 'low';
 }
 
-const CryptoStats: React.FC<CryptoStatsProps> = ({ profile, loading, sessionSteps = 0, isTracking = false }) => {
+const CryptoStats: React.FC<CryptoStatsProps> = ({ profile, loading, sessionSteps = 0, isTracking = false, stepAccuracy = 'low' }) => {
   if (loading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -24,6 +25,20 @@ const CryptoStats: React.FC<CryptoStatsProps> = ({ profile, loading, sessionStep
       </div>
     );
   }
+
+  const getAccuracyInfo = () => {
+    switch (stepAccuracy) {
+      case 'high':
+        return { icon: SignalHigh, text: 'Precise', color: 'text-green-400' };
+      case 'medium':
+        return { icon: SignalMedium, text: 'GPS', color: 'text-yellow-400' };
+      case 'low':
+      default:
+        return { icon: SignalLow, text: 'Est.', color: 'text-orange-400' };
+    }
+  };
+
+  const accuracyInfo = getAccuracyInfo();
 
   const stats = [
     {
@@ -53,6 +68,9 @@ const CryptoStats: React.FC<CryptoStatsProps> = ({ profile, loading, sessionStep
     {
       label: 'Steps',
       value: isTracking ? sessionSteps.toLocaleString() : '0',
+      subLabel: isTracking ? accuracyInfo.text : undefined,
+      subLabelColor: isTracking ? accuracyInfo.color : undefined,
+      accuracyIcon: isTracking ? accuracyInfo.icon : undefined,
       icon: Footprints,
       color: 'text-orange-400',
       bgColor: 'bg-orange-500/10',
@@ -79,10 +97,16 @@ const CryptoStats: React.FC<CryptoStatsProps> = ({ profile, loading, sessionStep
           }`}
         >
           <CardContent className="p-4">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center justify-between mb-2">
               <div className={`p-2 rounded-lg ${stat.bgColor}`}>
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
               </div>
+              {stat.accuracyIcon && (
+                <div className="flex items-center gap-1">
+                  <stat.accuracyIcon className={`w-3 h-3 ${stat.subLabelColor}`} />
+                  <span className={`text-[10px] ${stat.subLabelColor}`}>{stat.subLabel}</span>
+                </div>
+              )}
             </div>
             <p className="text-2xl font-bold text-white">{stat.value}</p>
             <p className="text-xs text-crypto-muted">{stat.label}</p>

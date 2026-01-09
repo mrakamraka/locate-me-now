@@ -56,18 +56,18 @@ export function VerifyBackupModal({
         <DialogHeader>
           <DialogTitle className="text-foreground flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-primary" />
-            Verifikuj Backup
+            Verify Backup
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Unesi svoju seed frazu (24 riječi) da provjeriš da li odgovara ovom walletu.
+            Enter your seed phrase (24 words) to verify it matches this wallet.
           </p>
 
           <div>
             <Textarea
-              placeholder="Unesi 24 riječi odvojene razmakom..."
+              placeholder="Enter 24 words separated by spaces..."
               value={seedPhrase}
               onChange={(e) => {
                 setSeedPhrase(e.target.value);
@@ -81,8 +81,8 @@ export function VerifyBackupModal({
             <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
               <ShieldCheck className="w-5 h-5 text-green-500" />
               <div>
-                <p className="text-sm font-medium text-green-500">Backup je ispravan!</p>
-                <p className="text-xs text-green-500/70">Ova seed fraza odgovara aktivnom walletu.</p>
+                <p className="text-sm font-medium text-green-500">Backup is valid!</p>
+                <p className="text-xs text-green-500/70">This seed phrase matches the active wallet.</p>
               </div>
             </div>
           )}
@@ -91,8 +91,8 @@ export function VerifyBackupModal({
             <div className="flex items-center gap-2 p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
               <AlertTriangle className="w-5 h-5 text-orange-500" />
               <div>
-                <p className="text-sm font-medium text-orange-500">Pogrešan wallet</p>
-                <p className="text-xs text-orange-500/70">Ova seed fraza pripada drugom walletu.</p>
+                <p className="text-sm font-medium text-orange-500">Wrong wallet</p>
+                <p className="text-xs text-orange-500/70">This seed phrase belongs to a different wallet.</p>
               </div>
             </div>
           )}
@@ -101,8 +101,8 @@ export function VerifyBackupModal({
             <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
               <ShieldX className="w-5 h-5 text-destructive" />
               <div>
-                <p className="text-sm font-medium text-destructive">Nevalidna seed fraza</p>
-                <p className="text-xs text-destructive/70">Provjeri da li si unio tačno 24 riječi.</p>
+                <p className="text-sm font-medium text-destructive">Invalid seed phrase</p>
+                <p className="text-xs text-destructive/70">Make sure you entered exactly 24 words.</p>
               </div>
             </div>
           )}
@@ -113,14 +113,14 @@ export function VerifyBackupModal({
               onClick={handleClose}
               className="flex-1"
             >
-              Zatvori
+              Close
             </Button>
             <Button
               onClick={handleVerify}
               disabled={!seedPhrase.trim()}
               className="flex-1 bg-primary hover:bg-primary/90"
             >
-              Verifikuj
+              Verify
             </Button>
           </div>
         </div>
