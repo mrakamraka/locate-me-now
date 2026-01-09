@@ -69,7 +69,7 @@ const Index: React.FC = () => {
   const previousLocationRef = useRef<{ latitude: number; longitude: number } | null>(null);
 
   // Step counter hook
-  const { steps, resetSteps } = useStepCounter(isTracking, sessionDistance);
+  const { steps, resetSteps, accuracy: stepAccuracy } = useStepCounter(isTracking, sessionDistance);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -226,7 +226,7 @@ const Index: React.FC = () => {
         )}
 
         {/* Crypto Stats */}
-        <CryptoStats profile={profile} loading={coinsLoading} sessionSteps={steps} isTracking={isTracking} />
+        <CryptoStats profile={profile} loading={coinsLoading} sessionSteps={steps} isTracking={isTracking} stepAccuracy={stepAccuracy} />
 
         {/* Controls */}
         <TrackingControls

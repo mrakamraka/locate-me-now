@@ -467,6 +467,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
           isOpen={verifyBackupModalOpen}
           onClose={() => setVerifyBackupModalOpen(false)}
           walletAddress={activeWallet.wallet_address}
+          verifyMnemonic={verifyMnemonic}
           deriveAddressFromMnemonic={deriveAddressFromMnemonic}
         />
       )}
