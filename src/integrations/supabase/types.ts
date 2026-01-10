@@ -49,6 +49,50 @@ export type Database = {
           },
         ]
       }
+      daily_walk_stats: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          sessions_count: number
+          total_coins: number
+          total_distance_km: number
+          total_steps: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          sessions_count?: number
+          total_coins?: number
+          total_distance_km?: number
+          total_steps?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          sessions_count?: number
+          total_coins?: number
+          total_distance_km?: number
+          total_steps?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_walk_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locations: {
         Row: {
           accuracy: number | null

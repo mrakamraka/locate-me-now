@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useWalkCoins } from '@/hooks/useWalkCoins';
 import { useWallet } from '@/hooks/useWallet';
 import { useStepCounter } from '@/hooks/useStepCounter';
+import { useDailyWalkStats } from '@/hooks/useDailyWalkStats';
 import LocationMap from '@/components/LocationMap';
 import CryptoStats from '@/components/CryptoStats';
 import ReferralCard from '@/components/ReferralCard';
@@ -13,6 +14,7 @@ import TrackingControls from '@/components/TrackingControls';
 import Leaderboard from '@/components/Leaderboard';
 import PersonalRank from '@/components/PersonalRank';
 import WalkHistory from '@/components/WalkHistory';
+import WalkCalendar from '@/components/WalkCalendar';
 import WalletCard from '@/components/wallet/WalletCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,9 +69,13 @@ const Index: React.FC = () => {
   const [sessionDistance, setSessionDistance] = useState(0);
   const lastRewardedDistanceRef = useRef(0);
   const previousLocationRef = useRef<{ latitude: number; longitude: number } | null>(null);
+  const sessionCoinsRef = useRef(0);
 
   // Step counter hook
-  const { steps, resetSteps, accuracy: stepAccuracy } = useStepCounter(isTracking, sessionDistance);
+  const { steps, resetSteps, accuracy: stepAccuracy, requestMotionPermission } = useStepCounter(isTracking, sessionDistance);
+
+  // Daily walk stats hook
+  const { dailyStats, updateTodayStats, fetchMonthStats } = useDailyWalkStats();
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -113,25 +119,33 @@ const Index: React.FC = () => {
       lastRewardedDistanceRef.current = kmToReward;
       
       const coinsEarned = Math.floor(newKm * 100 * (1 + (profile?.referral_count || 0)));
+      sessionCoinsRef.current += coinsEarned;
       toast.success(`+${coinsEarned} WALK Coins! 🚀`, {
         description: `Walked ${newKm.toFixed(1)} km`,
       });
     }
   }, [sessionDistance, user, addWalkReward, profile?.referral_count]);
 
-  const handleStartTracking = () => {
+  const handleStartTracking = async () => {
+    // Request motion permission first for precise step counting
+    await requestMotionPermission();
+    
     startTracking();
     setSessionDistance(0);
     lastRewardedDistanceRef.current = 0;
     previousLocationRef.current = null;
+    sessionCoinsRef.current = 0;
     resetSteps();
     toast.success('Tracking started! Walk and earn! 💰');
   };
 
-  const handleStopTracking = () => {
+  const handleStopTracking = async () => {
     stopTracking();
-    if (sessionDistance > 0) {
-      toast.info(`Session complete: ${sessionDistance.toFixed(2)} km, ${steps.toLocaleString()} steps`);
+    
+    // Save session stats to daily stats
+    if (sessionDistance > 0 || steps > 0) {
+      await updateTodayStats(steps, sessionDistance, sessionCoinsRef.current);
+      toast.info(`Session saved: ${sessionDistance.toFixed(2)} km, ${steps.toLocaleString()} steps`);
     }
   };
 
@@ -139,6 +153,7 @@ const Index: React.FC = () => {
     await clearHistory();
     setSessionDistance(0);
     lastRewardedDistanceRef.current = 0;
+    sessionCoinsRef.current = 0;
     resetSteps();
     toast.success('History cleared');
   };
@@ -284,6 +299,9 @@ const Index: React.FC = () => {
               totalCoins={profile?.total_coins || 0}
               currentLevel={profile?.current_level || 1}
             />
+
+            {/* Walk Calendar */}
+            <WalkCalendar dailyStats={dailyStats} fetchMonthStats={fetchMonthStats} />
 
             {/* Walk History */}
             <WalkHistory transactions={transactions} />
