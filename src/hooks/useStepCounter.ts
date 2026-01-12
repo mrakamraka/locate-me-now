@@ -1,11 +1,20 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+export interface StepSettings {
+  heightCm: number;
+  stepLengthM: number;
+  vibrationEnabled: boolean;
+  soundEnabled: boolean;
+}
+
 export interface UseStepCounterReturn {
   steps: number;
   isActive: boolean;
   resetSteps: () => void;
   accuracy: 'high' | 'medium' | 'low';
   requestMotionPermission: () => Promise<boolean>;
+  settings: StepSettings;
+  updateSettings: (settings: StepSettings) => void;
 }
 
 // Step detection configuration - optimized for real walking detection
@@ -14,8 +23,86 @@ const STEP_COOLDOWN = 280; // Minimum time between steps (ms) - avg walking cade
 const PEAK_DETECTION_WINDOW = 6; // Samples for peak detection
 const ACCELEROMETER_CHECK_DELAY = 2000; // Time to wait for accelerometer data
 
-// Fallback: Average step length in meters for distance-based estimation
-const AVERAGE_STEP_LENGTH = 0.762; // ~0.76m per step (average adult)
+// Default settings
+const DEFAULT_HEIGHT_CM = 170;
+const DEFAULT_STEP_LENGTH = 0.762; // ~0.76m per step (average adult)
+
+// Storage key for settings persistence
+const SETTINGS_STORAGE_KEY = 'walkcoin_step_settings';
+
+// Load settings from localStorage
+const loadSettings = (): StepSettings => {
+  try {
+    const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.log('Failed to load step settings:', e);
+  }
+  return {
+    heightCm: DEFAULT_HEIGHT_CM,
+    stepLengthM: DEFAULT_STEP_LENGTH,
+    vibrationEnabled: true,
+    soundEnabled: false,
+  };
+};
+
+// Save settings to localStorage
+const saveSettings = (settings: StepSettings) => {
+  try {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch (e) {
+    console.log('Failed to save step settings:', e);
+  }
+};
+
+// Audio context for step sound
+let audioContextInstance: AudioContext | null = null;
+
+const getAudioContext = (): AudioContext | null => {
+  if (!audioContextInstance) {
+    try {
+      audioContextInstance = new (window.AudioContext || (window as any).webkitAudioContext)();
+    } catch (e) {
+      console.log('AudioContext not available');
+    }
+  }
+  return audioContextInstance;
+};
+
+// Play step sound
+const playStepSound = () => {
+  const audioContext = getAudioContext();
+  if (!audioContext) return;
+
+  try {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 600;
+    oscillator.type = 'sine';
+    gainNode.gain.value = 0.08;
+    
+    // Quick fade out
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.06);
+    
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.06);
+  } catch (e) {
+    console.log('Failed to play step sound:', e);
+  }
+};
+
+// Trigger vibration
+const triggerVibration = () => {
+  if ('vibrate' in navigator) {
+    navigator.vibrate(25); // Short vibration
+  }
+};
 
 export const useStepCounter = (isTracking: boolean, distanceKm: number): UseStepCounterReturn => {
   const [steps, setSteps] = useState(0);
@@ -23,6 +110,7 @@ export const useStepCounter = (isTracking: boolean, distanceKm: number): UseStep
   const [accuracy, setAccuracy] = useState<'high' | 'medium' | 'low'>('low');
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [useGpsFallback, setUseGpsFallback] = useState(false);
+  const [settings, setSettings] = useState<StepSettings>(loadSettings);
   
   // For accelerometer-based detection
   const lastStepTimeRef = useRef(0);
@@ -35,6 +123,30 @@ export const useStepCounter = (isTracking: boolean, distanceKm: number): UseStep
   // For distance-based fallback
   const lastDistanceRef = useRef(0);
   const initialDistanceRef = useRef<number | null>(null);
+  const accumulatedDistanceRef = useRef(0);
+
+  // Settings ref for use in callbacks
+  const settingsRef = useRef(settings);
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
+  // Update settings
+  const updateSettings = useCallback((newSettings: StepSettings) => {
+    setSettings(newSettings);
+    saveSettings(newSettings);
+    console.log('Step settings updated:', newSettings);
+  }, []);
+
+  // Provide step feedback (vibration/sound)
+  const provideStepFeedback = useCallback(() => {
+    if (settingsRef.current.vibrationEnabled) {
+      triggerVibration();
+    }
+    if (settingsRef.current.soundEnabled) {
+      playStepSound();
+    }
+  }, []);
 
   // Request motion permission explicitly
   const requestMotionPermission = useCallback(async (): Promise<boolean> => {
@@ -117,6 +229,7 @@ export const useStepCounter = (isTracking: boolean, distanceKm: number): UseStep
         inStepRef.current = false;
         lastStepTimeRef.current = now;
         setSteps(prev => prev + 1);
+        provideStepFeedback();
         console.log('Step detected via accelerometer');
       }
     };
@@ -200,12 +313,13 @@ export const useStepCounter = (isTracking: boolean, distanceKm: number): UseStep
       accelerometerDataReceivedRef.current = false;
       accelerometerSampleCountRef.current = 0;
     };
-  }, [isTracking, permissionGranted]);
+  }, [isTracking, permissionGranted, provideStepFeedback]);
 
   // Distance-based step estimation as fallback - ALWAYS active when GPS fallback is enabled
   useEffect(() => {
     if (!isTracking) {
       initialDistanceRef.current = null;
+      accumulatedDistanceRef.current = 0;
       return;
     }
     
@@ -228,20 +342,33 @@ export const useStepCounter = (isTracking: boolean, distanceKm: number): UseStep
     if (distanceKm > lastDistanceRef.current) {
       const newDistanceKm = distanceKm - lastDistanceRef.current;
       const newDistanceM = newDistanceKm * 1000;
-      const estimatedSteps = Math.round(newDistanceM / AVERAGE_STEP_LENGTH);
       
-      if (estimatedSteps > 0) {
+      // Accumulate distance and count full steps
+      accumulatedDistanceRef.current += newDistanceM;
+      const stepLength = settings.stepLengthM;
+      const fullSteps = Math.floor(accumulatedDistanceRef.current / stepLength);
+      
+      if (fullSteps > 0) {
+        // Remove counted distance from accumulator
+        accumulatedDistanceRef.current -= fullSteps * stepLength;
+        
         setSteps(prev => {
-          const newTotal = prev + estimatedSteps;
-          console.log(`GPS fallback: +${estimatedSteps} steps (${newDistanceM.toFixed(1)}m), total: ${newTotal}`);
+          const newTotal = prev + fullSteps;
+          console.log(`GPS fallback: +${fullSteps} steps (${newDistanceM.toFixed(1)}m, step length: ${stepLength.toFixed(2)}m), total: ${newTotal}`);
           return newTotal;
         });
+        
+        // Provide feedback for each step (with slight delay for multiple steps)
+        for (let i = 0; i < Math.min(fullSteps, 5); i++) {
+          setTimeout(() => provideStepFeedback(), i * 100);
+        }
+        
         setAccuracy('medium');
       }
       
       lastDistanceRef.current = distanceKm;
     }
-  }, [isTracking, distanceKm, useGpsFallback]);
+  }, [isTracking, distanceKm, useGpsFallback, settings.stepLengthM, provideStepFeedback]);
 
   // Track active state
   useEffect(() => {
@@ -258,6 +385,7 @@ export const useStepCounter = (isTracking: boolean, distanceKm: number): UseStep
     lastPeakRef.current = 0;
     accelerometerSampleCountRef.current = 0;
     accelerometerDataReceivedRef.current = false;
+    accumulatedDistanceRef.current = 0;
     setUseGpsFallback(false);
   }, []);
 
@@ -267,5 +395,7 @@ export const useStepCounter = (isTracking: boolean, distanceKm: number): UseStep
     resetSteps,
     accuracy,
     requestMotionPermission,
+    settings,
+    updateSettings,
   };
 };

@@ -16,9 +16,10 @@ import PersonalRank from '@/components/PersonalRank';
 import WalkHistory from '@/components/WalkHistory';
 import WalkCalendar from '@/components/WalkCalendar';
 import WalletCard from '@/components/wallet/WalletCard';
+import StepCalibrationModal from '@/components/StepCalibrationModal';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, AlertCircle, LogOut, Zap, Footprints } from 'lucide-react';
+import { Coins, AlertCircle, LogOut, Zap, Footprints, Settings2 } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 
@@ -67,12 +68,20 @@ const Index: React.FC = () => {
   const [showPath, setShowPath] = useState(true);
   const [centerOnLocation, setCenterOnLocation] = useState(true);
   const [sessionDistance, setSessionDistance] = useState(0);
+  const [showStepSettings, setShowStepSettings] = useState(false);
   const lastRewardedDistanceRef = useRef(0);
   const previousLocationRef = useRef<{ latitude: number; longitude: number } | null>(null);
   const sessionCoinsRef = useRef(0);
 
   // Step counter hook
-  const { steps, resetSteps, accuracy: stepAccuracy, requestMotionPermission } = useStepCounter(isTracking, sessionDistance);
+  const { 
+    steps, 
+    resetSteps, 
+    accuracy: stepAccuracy, 
+    requestMotionPermission,
+    settings: stepSettings,
+    updateSettings: updateStepSettings,
+  } = useStepCounter(isTracking, sessionDistance);
 
   // Daily walk stats hook
   const { dailyStats, updateTodayStats, fetchMonthStats } = useDailyWalkStats();
@@ -219,6 +228,16 @@ const Index: React.FC = () => {
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={() => setShowStepSettings(true)}
+                className="text-crypto-muted hover:text-white hover:bg-crypto-card"
+                title="Step Counter Settings"
+              >
+                <Settings2 className="w-5 h-5" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={handleSignOut}
                 className="text-crypto-muted hover:text-white hover:bg-crypto-card"
               >
@@ -312,6 +331,14 @@ const Index: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Step Calibration Modal */}
+      <StepCalibrationModal
+        open={showStepSettings}
+        onOpenChange={setShowStepSettings}
+        settings={stepSettings}
+        onSaveSettings={updateStepSettings}
+      />
     </div>
   );
 };
