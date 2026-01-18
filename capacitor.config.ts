@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.035d0db429b045128789516691b8b090',
+  appId: 'com.locatemenow.tracker',
   appName: 'Phone Tracker',
   webDir: 'dist',
   server: {
